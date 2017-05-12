@@ -1,0 +1,11 @@
+algo = ./wrapper.sh
+execdir = smac_scenario/
+deterministic = 1
+runObj = quality
+overall_obj = mean
+numberOfRunsLimit = 100
+wallClockLimit = 86400
+paramfile = params.pcs
+instance_file = smac_scenario/instances_train.txt
+test_instance_file = smac_scenario/instances_test.txt
+

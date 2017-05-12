@@ -1,0 +1,4 @@
+"CPU Time Used","Estimated Training Performance","Wallclock Time","Incumbent ID","Automatic Configurator (CPU) Time","Configuration..."
+0.0, 1.7976931348623157E308, 0.0, 1, 0.0,  scale_down='30', scale_up='90'
+0.4963227870000001, -60.0, 2.244, 1, 0.396685194,  scale_down='30', scale_up='90'
+1.7767506690000001, -60.0, 21.116, 1, 0.7770140960000003,  scale_down='30', scale_up='90'

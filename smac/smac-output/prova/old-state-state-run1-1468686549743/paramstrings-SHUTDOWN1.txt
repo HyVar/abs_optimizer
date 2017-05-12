@@ -1,0 +1,5 @@
+1: scale_down='30', scale_up='90'
+2: scale_down='46', scale_up='97'
+3: scale_down='29', scale_up='56'
+4: scale_down='35', scale_up='51'
+5: scale_down='11', scale_up='42'

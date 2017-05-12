@@ -1,0 +1,7 @@
+# load to scale up
+scale_up integer [0,100] [90] 
+# load to scale down
+scale_down integer [0,100] [30]
+# conflicts
+{ scale_up <= scale_down }
+

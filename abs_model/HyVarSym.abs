@@ -1,0 +1,522 @@
+module HyVarSym;
+import * from ABS.DC;
+
+import * from Settings;
+
+//************************************************
+// auxiliary functions for logging
+//************************************************
+
+def String get_uri() = toString(random(1000000)); 
+
+def Unit log(String s) = println(s);
+
+//def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
+def Unit log_debug(String s) = Unit;
+
+//def Unit log_error(String s) = println("ERROR " + toString(now()) + ": " + s);
+def Unit log_error(String s) = Unit;
+
+//def Unit log_info(String s) = println("INFO " + toString(now()) + ": " + s);
+def Unit log_info(String s) = Unit;
+
+
+//sums
+def Rat sumRat(List<Rat> ls, Int n) =
+	if (n == 0 || isEmpty(ls)) then 0 else head(ls) + sumRat(tail(ls),n-1);
+
+def Int sumInt(List<Int> ls, Int n) =
+	if (n == 0 || isEmpty(ls)) then 0 else head(ls) + sumInt(tail(ls),n-1);
+
+//************************************************
+// Data Structures
+//************************************************
+
+data Job = Job(
+	Rat arrival_time,
+	String job_id,
+	Rat finishing_time
+);
+
+//************************************************
+// Interfaces and classes
+//************************************************
+
+interface Instance {
+  Bool exe(Int cost);  // assign jobs with a cost in milliseconds
+	Bool exe_speed_up(Int cost, Int parallel_cost);  // assign jobs with a cost in milliseconds
+	Bool kill(); // return true when the instance can be gracefully killed
+	DC getDC(); // get its DC
+	Unit decrease_speed_at_random();
+}
+
+class Instance() implements Instance {
+
+	Int pending_jobs = 0; // pending jobs
+	String name = toString(thisDC()); // name of the instance
+	Bool not_killed = True;
+
+	Unit decrease_speed_at_random() {
+		DC dc = thisDC();
+		InfRat speed_aux = dc.total(Speed);
+		Rat total_speed = case speed_aux {
+			Fin(x) => x;
+			_ => 1000;
+		};
+		log_debug("Instance " + name + ": find speed " + toString(total_speed));
+		Rat new_speed = total_speed;
+		Rat old_speed = total_speed;
+
+		while (not_killed) {
+			
+			if (random(10) == 0) {
+				new_speed = truncate(total_speed * ((random(10) + 90)/100));
+			} else {
+				new_speed = total_speed;
+			}
+			//log_debug("Speed: " + toString(new_speed));
+			if (old_speed > new_speed) {
+				log_debug("Decrease speed by " + toString(old_speed - new_speed));
+				dc.decrementResources(old_speed - new_speed, Speed);
+			} else {
+					if (new_speed > old_speed) {
+						log_debug("Increase speed by " + toString(new_speed-old_speed));
+						dc.incrementResources(new_speed-old_speed, Speed);
+					}
+			}
+			log_debug("Instance " + name + " speed is now " + toString(new_speed) + " - pending jobs " + toString(pending_jobs));
+			await duration(60,60);
+			old_speed = new_speed;
+		}
+	}
+	
+	Bool exe(Int cost) {
+		pending_jobs = pending_jobs + 1;
+		[Cost: cost] skip;
+		pending_jobs = pending_jobs - 1;
+		return True;
+	}
+
+	Bool exe_speed_up(Int cost, Int parallel_cost) {
+
+		pending_jobs = pending_jobs + 1;	
+		Rat speed_up = cost / (cost + parallel_cost * pending_jobs);
+		Int new_cost = truncate(cost / speed_up)+1;
+		[Cost: new_cost] skip;
+		pending_jobs = pending_jobs - 1;
+		return True;
+  }
+
+	Bool kill() {
+		log_debug("Instance " + name + ": kill signal received");
+		await (pending_jobs == 0);
+		not_killed = False;
+		return True;
+	}
+
+	DC getDC() {
+		return thisDC();
+	}	
+}
+
+
+interface LoadBalancer {
+	Unit init();
+  Bool exe(String job_id);  // assign jobs
+	Unit kill(); // kill instance at the end of simulation
+}
+
+class LoadBalancer(String name,
+								Int cost,
+								Int parallel_cost, // increase cost for every additional instance to process
+								Int instance_init_time, // time needed to start a new instance
+								Int instance_speed,  // cost / speed = number of jobs that can be process simultaneously
+								Rat scale_in_threshold, // average response time to scale in
+								Int scale_in_amount, // number of instances added every scale in
+								Rat scale_out_threshold, // average response time to scale out
+								Int scale_out_amount, // number of instances added every scale out
+								Int initial_instances, // number of initial instances
+								Rat scaling_down_ratio, // limit to disallow the scaling down 
+								Int max_conn, // limit on the number of connections to backend
+								Int cooling_off // timeslots after an update do avoid to do any scaling action
+							 ) implements LoadBalancer {
+
+	// mapping of active instances with the number of jobs submitted to them
+	Map<Instance,Int> instances = map[];
+
+	// finished jobs
+	List<Rat> history = list[]; 
+		
+	Bool not_killed = True; // when simulation is finished
+
+	Int pending_jobs = 0;
+	Int running_jobs = 0;
+
+  // for scale procedure
+	List<Rat> measure_list = list[];
+	List<Int> measure_count_list = list[];
+
+	Set<Instance> round_robin_instances = set[];
+	Instance get_next_instance() {
+		if (emptySet(round_robin_instances)) {
+			round_robin_instances = keys(instances);
+		}
+		Instance inst = take(round_robin_instances);
+		round_robin_instances = remove(round_robin_instances,inst);
+		if (lookup(instances,inst) == Nothing) {// instance has been removed
+			inst = this.get_next_instance();
+		}
+		return inst;
+	}
+
+
+	Instance get_less_loaded_instance() {
+		Set<Instance> ks = keys(instances);
+		assert (!emptySet(ks));
+		Instance min_inst = take(ks);
+		ks = remove(ks,min_inst);
+		Int min_val = lookupUnsafe(instances,min_inst);
+		while (!emptySet(ks)) {
+			Instance i = take(ks);
+			if (lookupUnsafe(instances,i) < min_val) {
+				min_inst = i;
+				min_val = lookupUnsafe(instances,i);
+			}
+			ks = remove(ks,i);
+		}
+		return min_inst;
+	}
+	
+	Unit init() { 
+		log_debug(name + ": initializing");
+		Int i = 0;
+		while (i < initial_instances) {
+			DC dc = new DeploymentComponent(name + toString(i), map[Pair(Speed, instance_speed)]);
+			[DC: dc] Instance inst = new Instance();
+			inst!decrease_speed_at_random();
+			println("scale_in," + toString(timeValue(now())) + "," + name); 
+			instances = put(instances,inst,0);
+			i = i+1;
+		}
+		if (scale_in_amount != 0) {
+			await duration(checking_avg_time_interval(),checking_avg_time_interval());
+			while (not_killed) {			
+				Bool has_scaled = this.scale();
+				if (has_scaled) {
+					Int counter = truncate(cooling_off/checking_avg_time_interval())-1;
+					while (counter > 0) {
+						await duration(checking_avg_time_interval(),checking_avg_time_interval());
+						this.update_history();
+						counter = counter -1 ;
+					}
+				}
+				await duration(checking_avg_time_interval(),checking_avg_time_interval());
+			}
+		}	  
+	}
+
+	Bool exe(String job_id) {
+		pending_jobs = pending_jobs + 1;
+		log_debug(name + " received job " + job_id);
+		Rat init_time = timeValue(now());
+
+		if (max_conn != 0) {
+			await (running_jobs < size(keys(instances)) * max_conn);
+		}
+		log_debug(name + " sending job " + job_id);
+		running_jobs = running_jobs + 1;
+
+		Instance inst = this.get_less_loaded_instance();
+		//Instance inst = this.get_next_instance();
+		instances = put(instances, inst, lookupUnsafe(instances,inst)+1);
+		Fut<Bool> f;
+		if (parallel_cost > 0) {
+			f = inst!exe_speed_up(cost,parallel_cost);
+		} else {
+			f = inst!exe(cost);
+		}
+		await f?;
+		f.get; 
+
+		if (contains(keys(instances),inst)) {
+			instances = put(instances, inst, lookupUnsafe(instances,inst)-1);
+		}
+		
+		log_debug(name + " solved job " + job_id);
+		
+		// save job in history
+		if (scale_in_amount != 0) {
+			history = Cons(timeValue(now()) - init_time,history);
+		}
+		log_debug(name + " processed job " + job_id);
+		running_jobs = running_jobs - 1;
+		pending_jobs = pending_jobs - 1;
+		return True;
+	}
+
+	Unit scale_in() {
+		DC dc = new DeploymentComponent("", map[Pair(Speed, instance_speed)]);
+		String time = toString(timeValue(now())); 
+		println("scale_in," + time + "," + name);
+		await duration(instance_init_time,instance_init_time);
+		if (not_killed) {
+			[DC: dc] Instance inst = new Instance();
+			inst!decrease_speed_at_random();
+			instances = put(instances,inst,0);
+		}
+	}
+
+	Unit scale_out() {
+		//remove the first instance of the pool if it is not the last one.
+		Fut<Bool> f;
+		if (length(values(instances)) > 1) {
+			Instance inst = this.get_less_loaded_instance();
+			instances = removeKey(instances,inst);
+			f = inst!kill();
+			await f?;
+			DC dc = inst.getDC();
+			dc!shutdown();
+			println("scale_out," + toString(timeValue(now())) + "," + name);
+		}
+	}
+
+	// update the history (to be colled every checking_avg_time_interval)
+	Unit update_history() {
+		measure_list = Cons(sumRat(history,-1),measure_list);
+		measure_count_list = Cons(length(history),measure_count_list);
+		history = list[];	
+	}		
+			
+	Bool scale() {
+
+		//log_debug(name + " history = " + toString(history));
+
+		measure_list = Cons(sumRat(history,-1),measure_list);
+		measure_count_list = Cons(length(history),measure_count_list);
+		history = list[];
+
+		Int m_time = truncate(cooling_off / checking_avg_time_interval());
+		Rat sum_latency = sumRat(measure_list,m_time);
+		Int counter = sumInt(measure_count_list,m_time);
+
+		Rat average_latency = 1;
+		if (counter != 0) {
+			average_latency = max(sum_latency / counter,1);
+		}
+		log_debug("Average latency " + toString(average_latency) + " - measures " + toString(counter));
+				
+		if (counter == 0) {
+				// if you have no jobs solved in the last time window
+				if (pending_jobs <  size(keys(instances)) * scaling_down_ratio) { 
+					log_debug(name + ": scale out decision taken. No jobs solved in previous time window");
+					while (counter < scale_out_amount) {
+						this!scale_out();
+						counter = counter + 1;
+					}
+				} else {
+					log_debug(name + ": scale in decision taken. No jobs solved in previous time window");
+					while (counter < scale_in_amount) {
+						this!scale_in();
+						counter = counter + 1;
+					}
+				}
+		} else if (average_latency >= scale_in_threshold) {
+				log_debug(name + ": scale in decision taken. Average latency " + toString(average_latency));
+				counter = 0;
+				while (counter < scale_in_amount) {
+					this!scale_in();
+					counter = counter + 1;
+				}
+		} else if ((average_latency <= scale_out_threshold) && (pending_jobs <  size(keys(instances)) * scaling_down_ratio)) {
+				log_debug(name + ": scale out decision taken. Average latency " + toString(average_latency));
+				counter = 0;
+				while (counter < scale_out_amount) {
+					this!scale_out();
+					counter = counter + 1;
+				}
+		}
+		return (counter > 0);
+	}
+
+	Unit kill() {
+		not_killed = False;
+		Set<Instance> ks = keys(instances);
+		while (!emptySet(ks)) {
+			Instance inst = take(ks);
+			ks = remove(ks,inst);
+			inst!kill();
+		}
+		log_debug(name + " sent killing signal to all instances"); 
+	}
+
+}
+
+
+interface Orchestrator {
+	Unit init();
+}
+
+class Orchestrator(List<Int> msg_list) implements Orchestrator {
+
+	List<LoadBalancer> components = list[]; // list of components
+
+	Int pending_jobs = 0; // pending jobs
+
+	Int job_counter = 0; // job counter to drop some packages if needed
+
+	Unit init() {
+		// create the components in order
+
+		List<Int> instance_cost_list = instance_cost_list();		
+		List<Int> initial_instances_list = initial_instances_list();
+		List<Int> scale_in_threshold_list = scale_in_threshold_list();
+		List<Int> scale_out_threshold_list = scale_out_threshold_list();
+		List<Int> scale_in_amount_list = scale_in_amount_list();
+		List<Int> scale_out_amount_list = scale_out_amount_list();
+		List<Int> instance_speed_list = instance_speed_list();
+		List<Int> instance_init_time_list = instance_init_time_list();
+		List<Int> parallel_cost_list = parallel_cost_list();
+		List<Rat> scaling_down_ratio_list = scaling_down_ratio_list();
+		List<Int> max_conn_list = max_conn_list();
+  	List<Int> cooling_off_time_list = cooling_off_time_list();
+
+		Int counter = 0;
+		while (instance_cost_list != Nil) {
+			LoadBalancer c = new LoadBalancer(
+					"comp" + toString(counter),
+					head(instance_cost_list),  // cost of every single job
+					head(parallel_cost_list), // additional cost for every insance to process in parallel
+					head(instance_init_time_list), // time needed to start a new instance
+					head(instance_speed_list),  // speed of an instance
+					head(scale_in_threshold_list), // average response time to scale in
+					head(scale_in_amount_list), // amount of instances added when scale in
+					head(scale_out_threshold_list), // average response time to scale out
+					head(scale_out_amount_list), // amount of instances removed when scale out
+					head(initial_instances_list), // number of initial instances
+					head(scaling_down_ratio_list), // limit to disallow the scaling down
+					head(max_conn_list), // max connections allowed per instance
+					head(cooling_off_time_list)
+					);
+			components = Cons(c, components);
+			counter = counter + 1;
+			instance_cost_list = tail(instance_cost_list);
+			initial_instances_list = tail(initial_instances_list);
+			scale_in_threshold_list = tail(scale_in_threshold_list);
+			scale_out_threshold_list = tail(scale_out_threshold_list);
+			scale_in_amount_list = tail(scale_in_amount_list);
+			scale_out_amount_list = tail(scale_out_amount_list);
+			instance_speed_list = tail(instance_speed_list);
+			instance_init_time_list = tail(instance_init_time_list);
+			parallel_cost_list = tail(parallel_cost_list);
+			scaling_down_ratio_list = tail(scaling_down_ratio_list);
+			max_conn_list = tail(max_conn_list);
+			cooling_off_time_list = tail(cooling_off_time_list);
+		}
+
+		// instances initialized
+		components = reverse(components);
+		List<LoadBalancer> ls = components;
+		while (ls != Nil) {
+			LoadBalancer c = head(ls);
+			c!init();
+			ls = tail(ls);
+		}
+
+		// start sending the messages
+
+		Int job_num = 0;
+		while ((msg_list != Nil) || (pending_jobs != 0)) {
+			if (msg_list != Nil) {
+				job_num = head(msg_list);
+				msg_list = tail(msg_list);
+				counter = 0;
+				while (counter < job_num) {
+					this!send_job();
+					counter = counter + 1;
+				}
+			}
+			await duration(1,1);
+		}
+
+		// kill component instances
+		log_debug("Orchestrator: send the termination signal to the components");
+		while (components != Nil) {
+			LoadBalancer c = head(components);
+			c!kill();
+			components = tail(components);
+		}
+		
+		println("simulation_ended," + toString(timeValue(now())));
+	}
+
+	Unit send_job() {
+
+		job_counter = job_counter + 1;
+		Int counter = job_counter;
+		
+		String job_id = toString(counter);
+		log_info("Orchestrator: new messages to send with uri " + job_id);
+		Int init_time = truncate(timeValue(now()));
+		Int t = init_time;
+		List<Int> times = Nil;
+		
+		pending_jobs = pending_jobs + 1;
+
+		List<LoadBalancer> ls = components;
+		List<Int> drops = drop_requests();
+		Fut<Bool> f;
+		Bool dropped = False;
+
+		while (ls != Nil) {
+			LoadBalancer c = head(ls);
+			f = c!exe(job_id);
+			await f?;
+			//log_debug(job_id + " has been totally or partially solved");
+			ls = tail(ls);
+			if (head(drops) != 0)
+				if (counter % head(drops) != 0) {
+					dropped = True;
+					ls = Nil;
+			}
+			drops = tail(drops);
+			times = Cons(truncate(timeValue(now())) - t,times);
+			t = truncate(timeValue(now()));
+			await duration(1,1); // wait one time unit (jobs executed in sequence!)
+		}
+
+		pending_jobs = pending_jobs - 1;
+
+		if (not(dropped)) {
+			String s = "job," + toString(init_time) + "," + toString(t) + "," + toString(t-init_time);
+			times = reverse(times);
+			while (times != Nil) {
+				s = s + "," + toString(head(times));
+				times = tail(times); 
+			}
+			println(s);
+		}
+	}
+}
+
+def List<Int> remove_first(List<Int> ls, Int n) = 
+	if (n < 1) then ls else remove_first(tail(ls),n-1);
+
+		
+//==================================
+{ //main block
+
+	println("aux,switch_time_slot," + toString(switch_time_slot()));
+	println("aux,initial_instances_list," + toString(initial_instances_list()));
+	println("aux,instance_cost_list," + toString(instance_cost_list()));
+	println("aux,scale_in_threshold_list," + toString(scale_in_threshold_list()));
+	println("aux,scale_out_threshold_list," + toString(scale_out_threshold_list()));
+	println("aux,scale_in_amount_list," + toString(scale_in_amount_list()));
+	println("aux,scale_out_amount_list," + toString(scale_out_amount_list()));
+	println("aux,instance_speed_list," + toString(instance_speed_list()));
+	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
+	println("aux,drop_requests," + toString(drop_requests()));
+
+	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	orchestrator.init();
+	
+}

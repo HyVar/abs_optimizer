@@ -1,0 +1,1 @@
+./smac --scenario-file abs_smac/abs_scenario.txt --seed 1 --validation false --rungroup prova

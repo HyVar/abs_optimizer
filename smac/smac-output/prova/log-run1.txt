@@ -1,0 +1,508 @@
+14:01:17.798 [main] INFO  c.u.c.b.a.l.ComplexLoggingOptions - Logging to: /home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova/log-run1.txt
+14:01:17.807 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Algorithm Execution & Abstraction Toolkit is v2.10.03-master-814 (ebf4c8c913d5) 
+14:01:17.807 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Java Runtime Environment is Java HotSpot(TM) 64-Bit Server VM (1.8.0_91) 
+14:01:17.807 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of OS is Linux 4.4.0-31-generic (amd64) 
+14:01:17.807 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Random Forest Library is v1.10.01-master-120 (b68439c2c391) 
+14:01:17.807 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of SMAC is v2.10.03-master-778 (3ee628ef9bf2) 
+14:01:17.808 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - Call String: smac --scenario-file abs_smac/abs_scenario.txt --seed 1 --validation false --rungroup prova 
+14:01:17.808 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - ********** The next bit of output can be ignored, it is merely useful for debugging **********
+14:01:17.808 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - ==========Enviroment Variables===========
+CLUTTER_IM_MODULE=xim
+COMPIZ_CONFIG_PROFILE=ubuntu
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-CEnBmaFks7
+DEFAULTS_PATH=/usr/share/gconf/ubuntu.default.path
+DERBY_HOME=/usr/lib/jvm/java-8-oracle/db
+DESKTOP_AUTOSTART_ID=10272396be586b6cdb146943050925415300000044520002
+DESKTOP_SESSION=ubuntu
+DISPLAY=:0
+GDMSESSION=ubuntu
+GDM_LANG=en_US
+GIO_LAUNCHED_DESKTOP_FILE=/home/jacopo/.config/autostart/guake.desktop
+GIO_LAUNCHED_DESKTOP_FILE_PID=4656
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+GNOME_KEYRING_CONTROL=
+GNOME_KEYRING_PID=
+GPG_AGENT_INFO=/home/jacopo/.gnupg/S.gpg-agent:0:1
+GTK2_MODULES=overlay-scrollbar
+GTK_IM_MODULE=ibus
+GTK_MODULES=gail:atk-bridge:unity-gtk-module
+HOME=/home/jacopo
+IM_CONFIG_PHASE=1
+INSTANCE=
+J2REDIR=/usr/lib/jvm/java-8-oracle/jre
+J2SDKDIR=/usr/lib/jvm/java-8-oracle
+JAVA_HOME=/usr/lib/jvm/java-8-oracle
+JOB=dbus
+JOLIE_HOME=/usr/lib/jolie
+LANG=en_US.UTF-8
+LANGUAGE=en_US
+LC_ADDRESS=nb_NO.UTF-8
+LC_IDENTIFICATION=nb_NO.UTF-8
+LC_MEASUREMENT=nb_NO.UTF-8
+LC_MONETARY=nb_NO.UTF-8
+LC_NAME=nb_NO.UTF-8
+LC_NUMERIC=nb_NO.UTF-8
+LC_PAPER=nb_NO.UTF-8
+LC_TELEPHONE=nb_NO.UTF-8
+LC_TIME=nb_NO.UTF-8
+LD_LIBRARY_PATH=/home/jacopo/programmi/constraint_solvers/gecode-4.4.0/build/lib::/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/native/:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/:/home/jacopo/Desktop/smac-v2.10.03-master-778/
+LESSCLOSE=/usr/bin/lesspipe %s %s
+LESSOPEN=| /usr/bin/lesspipe %s
+LOGNAME=jacopo
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+MANDATORY_PATH=/usr/share/gconf/ubuntu.mandatory.path
+NLSPATH=/usr/dt/lib/nls/msg/%L/%N.cat
+PATH=/home/jacopo/Desktop/other/software/sunny-cp/bin:/home/jacopo/Desktop/other/software/mzn2feat/bin:/home/jacopo/programmi/minizinc/MiniZincIDE-2.0.13-bundle-linux-x86_64:/home/jacopo/programmi/minizinc/minisearch-0.1.0b1-Linux/bin:/home/jacopo/programmi/aeolus/zephyrus:/home/jacopo/programmi/aeolus/metis:/home/jacopo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/bin
+PWD=/home/jacopo/Desktop/smac-v2.10.03-master-778
+QT4_IM_MODULE=xim
+QT_ACCESSIBILITY=1
+QT_IM_MODULE=ibus
+QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1
+QT_QPA_PLATFORMTHEME=appmenu-qt5
+SESSION=ubuntu
+SESSIONTYPE=gnome-session
+SESSION_MANAGER=local/jacopo-E5250:@/tmp/.ICE-unix/4452,unix/jacopo-E5250:/tmp/.ICE-unix/4452
+SHELL=/bin/bash
+SHLVL=1
+SSH_AUTH_SOCK=/run/user/1000/keyring/ssh
+TERM=xterm
+UPSTART_SESSION=unix:abstract=/com/ubuntu/upstart-session/1000/4231
+USER=jacopo
+XAUTHORITY=/home/jacopo/.Xauthority
+XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/usr/share/upstart/xdg:/etc/xdg
+XDG_CURRENT_DESKTOP=Unity
+XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+XDG_GREETER_DATA_DIR=/var/lib/lightdm-data/jacopo
+XDG_MENU_PREFIX=gnome-
+XDG_RUNTIME_DIR=/run/user/1000
+XDG_SEAT=seat0
+XDG_SEAT_PATH=/org/freedesktop/DisplayManager/Seat0
+XDG_SESSION_DESKTOP=ubuntu
+XDG_SESSION_ID=c2
+XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session0
+XDG_SESSION_TYPE=x11
+XDG_VTNR=7
+XFILESEARCHPATH=/usr/dt/app-defaults/%L/Dt
+XMODIFIERS=@im=ibus
+
+14:01:17.809 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Hostname:jacopo-E5250
+14:01:17.809 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - ==========System Properties==============
+ERRLOG=/home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova/log-err1.txt
+NUMRUN=1
+OUTPUTDIR=/home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova
+ROOT-LEVEL=INFO
+RUNLOG=/home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova/log-run1.txt
+STDOUT-LEVEL=INFO
+WARNLOG=/home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova/log-warn1.txt
+awt.toolkit=sun.awt.X11.XToolkit
+file.encoding=UTF-8
+file.encoding.pkg=sun.io
+file.separator=/
+java.awt.graphicsenv=sun.awt.X11GraphicsEnvironment
+java.awt.printerjob=sun.print.PSPrinterJob
+java.class.path=/home/jacopo/Desktop/smac-v2.10.03-master-778/conf/:/home/jacopo/Desktop/smac-v2.10.03-master-778/patches/:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/aeatk.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/aeatk-src.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/commons-collections-3.2.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/commons-collections-3.2.1-sources.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/commons-io-2.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/commons-math-2.2.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/commons-math3-3.3.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/DomainInter.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/exp4j-0.3.10.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/exp4j-0.4.3.BETA-3.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/fastrf.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/fastrf-src.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/guava-14.0.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jackson-annotations-2.3.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jackson-core-2.3.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jackson-databind-2.3.1.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/Jama-1.0.2.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jcip-annotations.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jcip-annotations-src.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jcommander.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/jmatharray.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/logback-access-1.1.2.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/logback-classic-1.1.2.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/logback-core-1.1.2.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/numerics4j-1.3.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/opencsv-2.3.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/slf4j-api-1.7.5.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/smac.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/smac-src.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/spi-0.2.4.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/*.jar:/home/jacopo/Desktop/smac-v2.10.03-master-778/patches/
+java.class.version=52.0
+java.endorsed.dirs=/usr/lib/jvm/java-8-oracle/jre/lib/endorsed
+java.ext.dirs=/usr/lib/jvm/java-8-oracle/jre/lib/ext:/usr/java/packages/lib/ext
+java.home=/usr/lib/jvm/java-8-oracle/jre
+java.io.tmpdir=/tmp
+java.library.path=/home/jacopo/programmi/constraint_solvers/gecode-4.4.0/build/lib::/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/native/:/home/jacopo/Desktop/smac-v2.10.03-master-778/lib/:/home/jacopo/Desktop/smac-v2.10.03-master-778/:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+java.runtime.name=Java(TM) SE Runtime Environment
+java.runtime.version=1.8.0_91-b14
+java.specification.name=Java Platform API Specification
+java.specification.vendor=Oracle Corporation
+java.specification.version=1.8
+java.vendor=Oracle Corporation
+java.vendor.url=http://java.oracle.com/
+java.vendor.url.bug=http://bugreport.sun.com/bugreport/
+java.version=1.8.0_91
+java.vm.info=mixed mode
+java.vm.name=Java HotSpot(TM) 64-Bit Server VM
+java.vm.specification.name=Java Virtual Machine Specification
+java.vm.specification.vendor=Oracle Corporation
+java.vm.specification.version=1.8
+java.vm.vendor=Oracle Corporation
+java.vm.version=25.91-b14
+line.separator=
+
+logback.configurationFile=ca/ubc/cs/beta/aeatk/logging/complex-logback.xml
+os.arch=amd64
+os.name=Linux
+os.version=4.4.0-31-generic
+path.separator=:
+sun.arch.data.model=64
+sun.boot.class.path=/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/classes
+sun.boot.library.path=/usr/lib/jvm/java-8-oracle/jre/lib/amd64
+sun.cpu.endian=little
+sun.cpu.isalist=
+sun.desktop=gnome
+sun.io.unicode.encoding=UnicodeLittle
+sun.java.command=ca.ubc.cs.beta.aeatk.ant.execscript.Launcher ca.ubc.cs.beta.smac.executors.SMACExecutor --scenario-file abs_smac/abs_scenario.txt --seed 1 --validation false --rungroup prova
+sun.java.launcher=SUN_STANDARD
+sun.jnu.encoding=UTF-8
+sun.management.compiler=HotSpot 64-Bit Tiered Compilers
+sun.os.patch.level=unknown
+user.country=US
+user.dir=/home/jacopo/Desktop/smac-v2.10.03-master-778
+user.home=/home/jacopo
+user.language=en
+user.name=jacopo
+user.timezone=Europe/Rome
+
+14:01:17.810 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - ==========Configuration Options==========
+[SMACOptions]
+ adaptiveCapping = false
+ alwaysRunInitialConfiguration = false
+ capAddSlack = 1.0
+ capSlack = 1.3
+classicInitModeOpts = [ClassicInitializationProcedureOptions]
+		 initialIncumbentRuns = 1
+
+dciModeOpts = [DoublingCappingInitializationProcedureOptions]
+		 numberOfChallengers = 2
+		 numberOfRunsPerChallenger = 2
+
+ucip = [UnbiasChallengerInitializationProcedureOptions]
+		 numberOfChallengers = 2
+		 numberOfRunsPerChallenger = 2
+		 cpulimit = 0
+
+ deterministicInstanceOrdering = false
+ doValidation = false
+ execMode = SMAC
+ experimentDir = /home/jacopo/Desktop/smac-v2.10.03-master-778/
+ expFunc = null
+help = [HelpOptions]
+		 showHiddenParameters = false
+		 showHelp = false
+		 helpLevel = BASIC
+		 showVersion = false
+		 helpDefaults = /home/jacopo/.aeatk/help.opt
+
+ initialChallengeRuns = 1
+ initialIncumbent = DEFAULT
+ initializationMode = CLASSIC
+ intensificationPercentage = 0.5
+ initialChallengers = []
+ initialChallengersIntensificationTime = 2147483647
+ iterativeCappingBreakOnFirstCompletion = false
+ iterativeCappingK = 1
+logOptions = [ComplexLoggingOptions]
+		 consoleLogLevel = INFO
+		 logLevel = INFO
+
+ maxIncumbentRuns = 2000
+mbOptions = [ModelBuildingOptions]
+		 maskCensoredDataAsKappaMax = false
+		 maskInactiveConditionalParametersAsDefaultValue = true
+		 maskCensoredDataAsUncensored = false
+		 imputationIterations = 2
+
+ modelHashCodeFile = null
+ numberOfChallengers = 10
+ numberOfRandomConfigsInEI = 10000
+ numberOfRandomConfigsUsedForLocalSearch = 0
+ numPCA = 7
+ optionFile = null
+ optionFile2 = null
+randomForestOptions = [RandomForestOptions]
+		 brokenVarianceCalculation = false
+		 freeMemoryPercentageToSubsample = 0.25
+		 fullTreeBootstrap = false
+		 ignoreConditionality = false
+		 imputeMean = false
+		 logModel = false
+		 minVariance = 1.0E-14
+		 numTrees = 10
+		 penalizeImputedValues = false
+		 preprocessMarginal = true
+		 ratioFeatures = 0.8333333333333334
+		 shuffleImputedValues = false
+		 splitMin = 10
+		 storeDataInLeaves = false
+		 subsamplePercentage = 0.9
+		 subsampleValuesWhenLowMemory = false
+
+runGroupOptions = [RunGroupOptions]
+		 runGroupName = prova
+		 runGroupExit = false
+		 replacementChar = %
+
+scenarioConfig = [ScenarioOptions]
+		 _runObj = QUALITY
+		 intraInstanceObj = MEAN
+		 interInstanceObj = MEAN
+		limitOptions = [TerminationCriteriaOptions]
+				 tunerTimeout = 2147483647
+				 numIterations = 2147483647
+				 runtimeLimit = 2147483647
+				 totalNumRunsLimit = 10
+				 countSMACTimeAsTunerTime = true
+				 challengeIncumbentAttempts = 1000
+				 fileToWatch = null
+
+		instanceOptions = [ProblemInstanceOptions]
+				 instanceFile = abs_smac/instances_train.txt
+				 instanceFeatureFile = null
+				 testInstanceFile = abs_smac/instances_test.txt
+				 checkInstanceFilesExist = false
+				 useInstances = true
+				 instanceSuffix = null
+				 testInstanceSuffix = null
+				 ignoreFeatures = false
+
+		 scenarioFile = /home/jacopo/Desktop/smac-v2.10.03-master-778/abs_smac/abs_scenario.txt
+		 outputDirectory = /home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output
+		 invalidScenarioReason = null
+		algoExecOptions = [AlgorithmExecutionOptions]
+				 algoExec = python wrapper.py
+				 algoExecDir = abs_smac/
+				 deterministic = true
+				 cutoffTime = 10.0
+				 cutoffLength = -1.0
+				 additionalContext = {}
+				taeOpts = [TargetAlgorithmEvaluatorOptions]
+						 targetAlgorithmEvaluator = CLI
+						 abortOnCrash = false
+						 abortOnFirstRunCrash = true
+						 retryCount = 0
+						 cacheRuns = false
+						 cacheDebug = false
+						 useDynamicCappingExclusively = false
+						 reportStrictlyIncreasingRuntimes = false
+						 boundRuns = false
+						 maxConcurrentAlgoExecs = 1
+						 exitOnFailure = false
+						 runHashCodeFile = null
+						 leakMemory = false
+						 leakMemoryAmount = 1024
+						 verifySAT = null
+						 checkSATConsistency = true
+						 checkSATConsistencyException = true
+						 callObserverBeforeCompletion = true
+						prePostOptions = [PrePostCommandOptions]
+								 preCommand = null
+								 postCommand = null
+								 exceptionOnError = false
+								 logOutput = true
+								 directory = /home/jacopo/Desktop/smac-v2.10.03-master-778/.
+
+						 checkResultOrderConsistent = false
+						 skipOutstandingEvaluationsTAE = false
+						 logRequestResponses = false
+						 logRequestResponsesRCOnly = false
+						 trackRunsScheduled = false
+						 trackRunsScheduledResolution = 1.0
+						 uncleanShutdownCheck = true
+						 killCaptimeExceedingRun = true
+						 killCaptimeExceedingRunFactor = 10.0
+						 checkRunConfigsUnique = true
+						 checkRunConfigsUniqueException = true
+						 observeWalltimeIfNoRuntime = true
+						 observeWalltimeScale = 0.95
+						 observeWalltimeDelay = 5.0
+						 synchronousObserver = true
+						 taeDefaults = /home/jacopo/.aeatk/tae.opt
+						ttaedo = [TransformTargetAlgorithmEvaluatorDecoratorOptions]
+								 transform = false
+								 transformValidValuesOnly = true
+								 SAT_runtime_transform = R
+								 SAT_quality_transform = Q
+								 UNSAT_runtime_transform = R
+								 UNSAT_quality_transform = Q
+								 TIMEOUT_runtime_transform = R
+								 TIMEOUT_quality_transform = Q
+								 other_runtime_transform = R
+								 other_quality_transform = Q
+
+						tForkOptions = [ForkingTargetAlgorithmEvaluatorDecoratorOptions]
+								 forkToTAE = null
+								fPolicyOptions = [ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions]
+										 fPolicy = null
+										 duplicateOnSlaveQuickTimeout = 5
+
+
+						 fileToWatch = null
+						 warnIfNoResponseFromTAE = 120
+						 taeStopProcessingOnShutdown = true
+						 filecache = false
+						 fileCacheSource = /home/jacopo/Desktop/smac-v2.10.03-master-778/./runcache
+						 fileCacheOutput = /home/jacopo/Desktop/smac-v2.10.03-master-778/./runcache
+						 fileCacheCrashOnMiss = false
+						 transformCrashedQuality = true
+						 transformCrashedQualityValue = 1.0E9
+						 filterZeroCutoffRuns = true
+
+				paramFileDelegate = [ParamConfigurationSpaceOptions]
+						 paramFile = abs_smac/params.pcs
+						 searchSubspace = null
+						 searchSubspaceFile = null
+						 continuousNeighbours = 4
+
+
+
+seedOptions = [SeedOptions]
+		 seedOffset = 0
+		 numRun = 1
+		 initialSeedMap = {}
+
+ smacDefaults = /home/jacopo/.aeatk/smac.opt
+stateOpts = [StateFactoryOptions]
+		 stateSerializer = LEGACY
+		 statedeSerializer = LEGACY
+		 restoreStateFrom = null
+		 restoreIteration = null
+		 restoreScenario = null
+		 cleanOldStatesOnSuccess = true
+		 saveContextWithState = true
+
+trackingOptions = [ParamConfigurationOriginTrackingOptions]
+		 configTracking = false
+
+validationOptions = [ValidationOptions]
+		 maxTimestamp = -1.0
+		 minTimestamp = 0.0
+		 multFactor = 2.0
+		 numberOfTestInstances = 2147483647
+		 numberOfTestSeedsPerInstance = 1000
+		 numberOfValidationRuns = 1
+		 outputFileSuffix = 
+		 saveStateFile = false
+		 useWallClockTime = true
+		 validateAll = false
+		 validateOnlyIfTunerTimeReached = 0.0
+		 validateOnlyIfWallTimeReached = 0.0
+		 validateOnlyLastIncumbent = true
+		 validationHeaders = true
+		 validationRoundingMode = UP
+
+warmStartOptions = [WarmStartOptions]
+		 warmStartStateFrom = null
+		 restoreIteration = 2147483647
+
+ validationSeed = 0
+ saveRunsEveryIteration = false
+ stateQuickSaves = true
+ shutdownTAEWhenDone = true
+ validationCores = null
+ shareModelMode = false
+ shareRunDataFrequency = 300
+ shareModeModeTAE = true
+ writeRunData = true
+ defaultHandler = USE_ALL
+ sharedModeModeAssymetricMode = false
+
+[AnalyticTargetAlgorithmEvaluatorOptions]
+ simulateDelay = false
+ cores = 0
+ observerFrequency = 100
+ func = CAMELBACK
+ scaleDelay = 1.0
+
+[BlackHoleTargetAlgorithmEvaluatorOptions]
+ warnings = true
+
+[CommandLineTargetAlgorithmEvaluatorOptions]
+ observerFrequency = 500
+ concurrentExecution = true
+ cores = 1
+ logAllCallStrings = false
+ logAllResultLines = false
+ logAllCallsAndResultLines = false
+ logAllProcessOutput = false
+ listenForUpdates = true
+ paramArgumentsContainQuotes = false
+ pgEnvKillCommand = null
+ pgNiceKillCommand = bash -c "kill -s TERM -%pid"
+ pgForceKillCommand = bash -c "kill -s KILL -%pid"
+ procNiceKillCommand = kill -s TERM %pid
+ procForceKillCommand = kill -s KILL %pid
+ smacDefaults = /home/jacopo/.aeatk/cli-tae.opt
+
+[ConstantTargetAlgorithmEvaluatorOptions]
+ runResult = SAT
+ runtime = 1.0
+ quality = 0.0
+ runlength = 0.0
+ additionalRunData = 
+
+[IPCTargetAlgorithmEvaluatorOptions]
+ persistent = false
+ ipcMechanism = UDP
+ encodingMechanism = CALL_STRING
+ remoteHost = 127.0.0.1
+ remotePort = 5050
+ udpPacketSize = 4096
+ localPort = 0
+ execScript = null
+ execScriptOutput = false
+ poolConnections = false
+ ipcDefaults = /home/jacopo/.aeatk/ipc-tae.opt
+ asyncThreads = 5
+
+[PreloadedResponseTargetAlgorithmEvaluatorOptions]
+ preloadedResponses = 
+ runLength = -1.0
+ quality = 0.0
+ additionalRunData = 
+
+[RandomResponseTargetAlgorithmEvaluatorOptions]
+ simulateDelay = false
+ additionalRunData = 
+ cores = 0
+ maxResponse = 10.0
+ minResponse = 0.0
+ observerFrequency = 500
+ trendCoefficient = 0.0
+ seed = 1469448077371
+ persistent = false
+ scaleDelay = 1.0
+
+
+14:01:17.876 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - Found previous run data in state output folder: /home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova , renamed to: old-state-state-run1-1469448077876
+14:01:18.096 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - SMAC started at: Jul 25, 2016 2:01:18 PM. Minimizing mean quality.
+14:01:20.323 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - First incumbent: config 1 (internal ID: 0x000B), with mean quality: -60.0; estimate based on 1 runs.
+14:01:20.323 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Sample call for new incumbent config 1 (internal ID: 0x000B): 
+cd /home/jacopo/Desktop/smac-v2.10.03-master-778/abs_smac; python wrapper.py 2 0 10.0 2147483647 -1 -scale_down '30' -scale_up '90'  
+14:01:22.658 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Updated estimated mean quality of the same incumbent: -60.0; estimate now based on 2 runs.
+14:01:26.786 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Updated estimated mean quality of the same incumbent: -60.0; estimate now based on 3 runs.
+14:01:30.920 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Updated estimated mean quality of the same incumbent: -60.0; estimate now based on 4 runs.
+14:01:39.199 [main] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Developer Statistics*****
+ Count: 2
+ Incumbent ID: 1 (internal ID:0x000B)
+ Number of PISPs for Incumbent: 4
+ Number of Instances for Incumbent: 4
+ Number of Configurations Run: 7
+ Performance of the Incumbent: -60.000
+ Configuration Time Budget used: 1.78 s (0%)
+ Configuration Time Budget remaining: 2.15E9 s
+ Wall-clock Time Budget used: 21.12 s (0%)
+ Wall-clock Time Budget remaining: 2.15E9 s
+ Algorithm Runs used: 10.00  (100%)
+ Algorithm Runs remaining: 0.00 
+ Model/Iteration used: 1.00  (0%)
+ Model/Iteration remaining: 2.15E9 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 1.000 s
+ CPU time of Configurator: 0.778 s
+ User time of Configurator: 0.778 s
+ Outstanding Runs on Target Algorithm Evaluator: 0
+ Outstanding Requests on Target Algorithm Evaluator: 0
+ Total Reported Algorithm Runtime: 0.000 s
+ Sum of Measured Wallclock Runtime: 20.358 s
+ Max Memory: 910 MB
+ Total Java Memory: 119 MB
+ Free Java Memory: 98 MB
+ * PISP count is roughly the number of runs, but doesn't included redundant runs on the same problem instance & seed
+14:01:39.200 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - 
+=======================================================================================
+SMAC has finished. Reason: algorithm run limit (10 runs) has been reached.   
+Total number of runs performed: 10, total configurations tried: 7.
+Total CPU time used: 2 s, total wallclock time used: 21 s.
+SMAC's final incumbent: config 1 (internal ID: 0x000B), with estimated mean quality: -60.0, based on 4 run(s) on 4 training instance(s).
+Sample call for this final incumbent:
+cd /home/jacopo/Desktop/smac-v2.10.03-master-778/abs_smac; python wrapper.py 1 0 10.0 2147483647 -1 -scale_down '30' -scale_up '90'
+=======================================================================================
+14:01:39.201 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Additional information about run 1 in:/home/jacopo/Desktop/smac-v2.10.03-master-778/smac-output/prova
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------

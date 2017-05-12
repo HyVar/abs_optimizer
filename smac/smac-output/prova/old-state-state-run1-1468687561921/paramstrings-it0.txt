@@ -1,0 +1,1 @@
+1: scale_down='30', scale_up='90'

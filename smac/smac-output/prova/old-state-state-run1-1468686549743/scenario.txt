@@ -1,0 +1,13 @@
+algo = bash run_abs_model.sh
+execdir = abs_smac/
+deterministic = 1
+runObj = quality
+overall_obj = mean
+target_run_cputime_limit = 10
+numberOfRunsLimit = 40
+paramfile = abs_smac/params.pcs
+instance_file = abs_smac/instances_train.txt
+test_instance_file = abs_smac/instances_test.txt
+tae = CLI
+cli-cores = 1
+
