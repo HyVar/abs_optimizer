@@ -20,9 +20,9 @@ http://www.cs.ubc.ca/labs/beta/Projects/SMAC/v2.10.03/manual.pdf for more
 details.
 
 - define the scenario setting to use SMAC in the file scenario.txt . In
-particular an important element that may be changes is the number of runs
+particular an important element that may be changed is the number of runs
 of the models which is selected by setting the parameter numberOfRunsLimit.
-For the meaning of the other parameters we invite the user to consult the
+For the meaning of the other parameters we refer the user to the
 manual of SMAC.
 
 - define the quality of a run of the ABS model. The function to compute the
@@ -33,5 +33,5 @@ python program in the program parse_abs_output.py
 the parameters, what are the other ABS file to use for the compilation,
 timeouts, ...) in the file settings.py
 
-The tool can be run by invoking the command run_smac.sh
+The tool can be run by invoking the command run_smac.sh or run_smac_parallel.sh.
 The output of the computation is saved in the directory smac-output
