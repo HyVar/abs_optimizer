@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
 		python-dev \
 		erlang \
 		ant \
+		screen \
 		nano && \
 	cd / && \
 	git clone --depth=1 https://github.com/abstools/abstools.git && \

@@ -19,5 +19,5 @@ CLOCK_LIMIT = -1
 TIMEOUT = 7200
 
 # timeout during the computation to expect at least some output (seconds)
-OUTPUT_TIMEOUT = 10
+OUTPUT_TIMEOUT = 120
 

@@ -11,8 +11,8 @@ def String get_uri() = toString(random(1000000));
 
 def Unit log(String s) = println(s);
 
-//def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
-def Unit log_debug(String s) = Unit;
+def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
+//def Unit log_debug(String s) = Unit;
 
 //def Unit log_error(String s) = println("ERROR " + toString(now()) + ": " + s);
 def Unit log_error(String s) = Unit;
@@ -92,6 +92,7 @@ class Instance() implements Instance {
 	
 	Bool exe(Int cost) {
 		pending_jobs = pending_jobs + 1;
+		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));
 		[Cost: cost] skip;
 		pending_jobs = pending_jobs - 1;
 		return True;
@@ -99,7 +100,8 @@ class Instance() implements Instance {
 
 	Bool exe_speed_up(Int cost, Int parallel_cost) {
 
-		pending_jobs = pending_jobs + 1;	
+		pending_jobs = pending_jobs + 1;
+		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));	
 		Rat speed_up = cost / (cost + parallel_cost * pending_jobs);
 		Int new_cost = truncate(cost / speed_up)+1;
 		[Cost: new_cost] skip;
@@ -217,7 +219,7 @@ class LoadBalancer(String name,
 
 	Bool exe(String job_id) {
 		pending_jobs = pending_jobs + 1;
-		log_debug(name + " received job " + job_id);
+		log_debug(name + " received job " + job_id + ". Running/Pending jobs = " + toString(running_jobs) + "/" + toString(pending_jobs) );
 		Rat init_time = timeValue(now());
 
 		if (max_conn != 0) {
