@@ -93,7 +93,18 @@ class Instance() implements Instance {
 	Bool exe(Int cost) {
 		pending_jobs = pending_jobs + 1;
 		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));
-		[Cost: cost] skip;
+		// cost annotation is blocking and therefore needs to be splitted into
+		// short instructions
+		while (cost > 0) {
+			if (cost <= switch_time_slot()) {
+				[Cost: cost] skip;
+				cost = 0;
+			} else {
+				cost = cost - switch_time_slot();
+				[Cost: switch_time_slot()] skip;
+				suspend;
+			}
+		}
 		pending_jobs = pending_jobs - 1;
 		return True;
 	}
@@ -104,7 +115,17 @@ class Instance() implements Instance {
 		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));	
 		Rat speed_up = cost / (cost + parallel_cost * pending_jobs);
 		Int new_cost = truncate(cost / speed_up)+1;
-		[Cost: new_cost] skip;
+
+		while (new_cost > 0) {
+			if (new_cost <= switch_time_slot()) {
+				[Cost: new_cost] skip;
+				new_cost = 0;
+			} else {
+				[Cost: switch_time_slot()] skip;
+				suspend;
+				new_cost = new_cost - switch_time_slot();				
+			}
+		}
 		pending_jobs = pending_jobs - 1;
 		return True;
   }
@@ -276,7 +297,8 @@ class LoadBalancer(String name,
 			instances = removeKey(instances,inst);
 			f = inst!kill();
 			await f?;
-			DC dc = inst.getDC();
+			Fut<DC> fut_dc = inst!getDC();
+			DC dc = fut_dc.get;
 			dc!shutdown();
 			println("scale_out," + toString(timeValue(now())) + "," + name);
 		}
@@ -519,6 +541,6 @@ def List<Int> remove_first(List<Int> ls, Int n) =
 	println("aux,drop_requests," + toString(drop_requests()));
 
 	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
-	orchestrator.init();
+	orchestrator!init();
 	
 }
