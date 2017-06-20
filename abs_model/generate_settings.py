@@ -210,9 +210,13 @@ for i in jobs_arrival_times:
 
 ls = [ jobs_per_time_slot[x] for x in sorted(jobs_per_time_slot.keys())]
 
+ELEMENTS_PER_LIST = 100000
 counter = 0
-print "def List<Int> jobs_per_time_slot() = concatenate(list" + unicode(ls[0:10]) + ",jobs_aux" + unicode(counter) + "());"
-for i in range(1,len(ls)/10):
-    print "def List<Int> jobs_aux" + unicode(counter) + "() = concatenate(list" + unicode(ls[i*10:(i+1)*10]) + ",jobs_aux" + unicode(counter+1) + "());"
-    counter += 1
-print "def List<Int> jobs_aux" + unicode(counter)  + "() = list" + unicode(ls[(i+1)*10:]) + ";"
+if ELEMENTS_PER_LIST < len(ls):
+		print "def List<Int> jobs_per_time_slot() = concatenate(list" + unicode(ls[0:ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter) + "());"
+		for i in range(1,len(ls)/ELEMENTS_PER_LIST):
+				print "def List<Int> jobs_aux" + unicode(counter) + "() = concatenate(list" + unicode(ls[i*ELEMENTS_PER_LIST:(i+1)*ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter+1) + "());"
+				counter += 1
+		print "def List<Int> jobs_aux" + unicode(counter)  + "() = list" + unicode(ls[(i+1)*ELEMENTS_PER_LIST:]) + ";"
+else:
+		print "def List<Int> jobs_per_time_slot() = list" + unicode(ls) + ";"
