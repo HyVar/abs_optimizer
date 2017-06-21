@@ -7,7 +7,7 @@
 
 export SMAC_MEMORY=2048
 
-PAR_PROC=2
+PAR_PROC=1
 
 OPT="--scenario-file scenario.txt"
 OPT=$OPT" --initial-incumbent RANDOM"

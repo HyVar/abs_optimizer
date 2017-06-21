@@ -61,7 +61,7 @@ def check_file_size(f):
     os.fsync(f.fileno())
     return os.fstat(f.fileno()).st_size
 
-def detect_fast_crash_with_files(new_dir,err_num=3):
+def detect_fast_crash_with_files(new_dir,err_num=settings.ERROR_NUMBER):
     out_file = open(new_dir + "/out.log", "w")
     tell = check_file_size(out_file)
     if settings.CLOCK_LIMIT == -1:
@@ -100,7 +100,7 @@ def detect_fast_crash_with_files(new_dir,err_num=3):
     return out
 
 
-def detect_fast_crash_with_reads(new_dir,err_num=3):
+def detect_fast_crash_with_reads(new_dir,err_num=settings.ERROR_NUMBER):
     if settings.CLOCK_LIMIT == -1:
         proc = Popen( [ "timeout", unicode(settings.TIMEOUT), 
                   "./gen/erl/run" ],

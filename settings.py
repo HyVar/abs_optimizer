@@ -16,8 +16,11 @@ ADDITIONAL_ABS_FILES = [ "abs_model/HyVarSym.abs" ]
 CLOCK_LIMIT = -1
 
 # timeout in seconds for the ABS simulation
-TIMEOUT = 7200
+TIMEOUT = 3600
 
 # timeout during the computation to expect at least some output (seconds)
-OUTPUT_TIMEOUT = 120
+# check every
+OUTPUT_TIMEOUT = 30
+# times without any output to detect that simulation is hanging
+ERROR_NUMBER = 2
 

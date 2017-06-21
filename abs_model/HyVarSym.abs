@@ -11,8 +11,8 @@ def String get_uri() = toString(random(1000000));
 
 def Unit log(String s) = println(s);
 
-def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
-//def Unit log_debug(String s) = Unit;
+//def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
+def Unit log_debug(String s) = Unit;
 
 //def Unit log_error(String s) = println("ERROR " + toString(now()) + ": " + s);
 def Unit log_error(String s) = Unit;
