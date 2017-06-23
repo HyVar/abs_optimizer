@@ -4,7 +4,7 @@ import math
 instance_base_speed = 1000
 
 # average times in ms
-avg_times = [30,1350,30,70 + 500 + 255,33000]
+avg_times = [30,1350,30,70 + 500 + 255,34500]
 
 # init time for instances in ms
 instance_init_times = [0, (33 + 420)*1000,0,0,(32 + 349)*1000]
@@ -65,7 +65,7 @@ drop_requests = [0,0,3,0,0]
 scaling_down_ratio = ["0","25","0","0","20/20"]
 
 #max_conn (0 means infinite) 
-max_conn = [0,30,0,0,10]
+max_conn = [0,30,0,0,2]
 
 # parallel_part
 parallel_cost = [0,0,0,0,150]
