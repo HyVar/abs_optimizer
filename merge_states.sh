@@ -25,17 +25,11 @@ else
 	TXT_FILE=`ls $2 | grep paramstrings-it*`
 	cat $2/$TXT_FILE | grep "^$NUM_SOL:"
 
-	#echo "Positive Runs"
-	#cat $2/$CSV_FILE | grep SAT | wc -l
-
-	#echo "Crashes"
-	#cat $2/$CSV_FILE | grep CRASH | wc -l
-
 	echo "Positive Runs"
-	for f in `ls $1/log-run*`; do cat $f ; done | grep quality: | grep INFO | grep -v 1.0E9 | wc -l
+	cat $2/$CSV_FILE | grep SAT | wc -l
 
 	echo "Crashes"
-	for f in `ls $1/log-run*`; do cat $f ; done | grep "CRASHED, 0" | wc -l
+	cat $2/$CSV_FILE | grep CRASH | wc -l
 
 fi
 
