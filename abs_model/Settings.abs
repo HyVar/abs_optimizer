@@ -9,7 +9,7 @@ def Int cooling_off_time_0() =  300 ;
 def Int cooling_off_time_1() =  360 ;
 def Int cooling_off_time_2() =  300 ;
 def Int cooling_off_time_3() =  300 ;
-def Int cooling_off_time_4() =  420 ;
+def Int cooling_off_time_4() =  480 ;
 def List<Int>  cooling_off_time_list() = list [cooling_off_time_0(),cooling_off_time_1(),cooling_off_time_2(),cooling_off_time_3(),cooling_off_time_4()] ;
 
 def Int initial_instances_0() =  1 ;
@@ -19,20 +19,20 @@ def Int initial_instances_3() =  1 ;
 def Int initial_instances_4() =  1 ;
 def List<Int> initial_instances_list() = list [initial_instances_0(),initial_instances_1(),initial_instances_2(),initial_instances_3(),initial_instances_4()] ;
 
-def List<Int>  instance_cost_list() = list [30, 1350, 30, 825, 34500] ;
+def List<Int>  instance_cost_list() = list [30, 1350, 30, 825, 34250] ;
 
 def Int scale_in_threshold_0() =  1000 ;
-def Int scale_in_threshold_1() =  58 ;
+def Int scale_in_threshold_1() =  219 ;
 def Int scale_in_threshold_2() =  1000 ;
 def Int scale_in_threshold_3() =  1000 ;
-def Int scale_in_threshold_4() =  300 ;
+def Int scale_in_threshold_4() =  192 ;
 def List<Int>  scale_in_threshold_list() = list [scale_in_threshold_0(),scale_in_threshold_1(),scale_in_threshold_2(),scale_in_threshold_3(),scale_in_threshold_4()] ;
 
 def Int scale_out_threshold_0() =  999 ;
-def Int scale_out_threshold_1() =  4 ;
+def Int scale_out_threshold_1() =  111 ;
 def Int scale_out_threshold_2() =  999 ;
 def Int scale_out_threshold_3() =  999 ;
-def Int scale_out_threshold_4() =  223 ;
+def Int scale_out_threshold_4() =  106 ;
 def List<Int>  scale_out_threshold_list() = list [scale_out_threshold_0(),scale_out_threshold_1(),scale_out_threshold_2(),scale_out_threshold_3(),scale_out_threshold_4()] ;
 
 def Int scale_in_amount_0() =  0 ;
@@ -43,13 +43,13 @@ def Int scale_in_amount_4() =  1 ;
 def List<Int> scale_in_amount_list() = list [scale_in_amount_0(),scale_in_amount_1(),scale_in_amount_2(),scale_in_amount_3(),scale_in_amount_4()] ;
 
 def Int scale_out_amount_0() =  0 ;
-def Int scale_out_amount_1() =  3 ;
+def Int scale_out_amount_1() =  2 ;
 def Int scale_out_amount_2() =  0 ;
 def Int scale_out_amount_3() =  0 ;
-def Int scale_out_amount_4() =  1 ;
+def Int scale_out_amount_4() =  2 ;
 def List<Int> scale_out_amount_list() = list [scale_out_amount_0(),scale_out_amount_1(),scale_out_amount_2(),scale_out_amount_3(),scale_out_amount_4()] ;
 
-def List<Int> parallel_cost_list() = list [0, 0, 0, 0, 150] ;
+def List<Int> parallel_cost_list() = list [0, 0, 0, 0, 1000] ;
 
 def List<Int>  instance_speed_list() = list [1000, 1000, 1000, 3000, 1000] ;
 

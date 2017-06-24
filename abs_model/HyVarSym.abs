@@ -70,7 +70,7 @@ class Instance() implements Instance {
 		while (not_killed) {
 			
 			if (random(10) == 0) {
-				new_speed = truncate(total_speed * ((random(10) + 90)/100));
+				new_speed = truncate(total_speed * ((random(20) + 80)/100));
 			} else {
 				new_speed = total_speed;
 			}
@@ -225,6 +225,8 @@ class LoadBalancer(String name,
 			i = i+1;
 		}
 		if (scale_in_amount != 0) {
+			// do not scale after the first time interval (answers need to be collected)
+			await duration(checking_avg_time_interval(),checking_avg_time_interval());
 			await duration(checking_avg_time_interval(),checking_avg_time_interval());
 			while (not_killed) {			
 				Bool has_scaled = this.scale();
