@@ -563,7 +563,7 @@ def List<Int> remove_first(List<Int> ls, Int n) =
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),14400));
+	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
 	orchestrator!init();
 	
 }
