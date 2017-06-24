@@ -67,9 +67,10 @@ class Instance() implements Instance {
 		Rat new_speed = total_speed;
 		Rat old_speed = total_speed;
 
+		/**
 		while (not_killed) {
 			
-			if (random(10) == 0) {
+			if (random(50) == 0) {
 				new_speed = truncate(total_speed * ((random(20) + 80)/100));
 			} else {
 				new_speed = total_speed;
@@ -88,9 +89,16 @@ class Instance() implements Instance {
 			await duration(60,60);
 			old_speed = new_speed;
 		}
+		**/
 	}
 	
 	Bool exe(Int cost) {
+
+		// sometimes cost increase a lot (seen from the logs
+		// do not know why, probably depends on the scheduler
+		if (random(50) == 0) {
+			cost = truncate(cost * ((100 + random(200))/100));
+		}
 		pending_jobs = pending_jobs + 1;
 		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));
 		// cost annotation is blocking and therefore needs to be splitted into
@@ -256,6 +264,10 @@ class LoadBalancer(String name,
 			pending_job_list = appendright(pending_job_list, counter);
 			await ((head(pending_job_list) == counter) && (running_jobs < size(keys(instances)) * max_conn));
 			pending_job_list = tail(pending_job_list);
+			// await time (extra work done by haproxy)
+			if (init_time != timeValue(now())) {
+				await duration(1,1);
+			}
 		}
 		log_debug(name + " sending job " + job_id);
 		running_jobs = running_jobs + 1;
@@ -551,7 +563,7 @@ def List<Int> remove_first(List<Int> ls, Int n) =
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),14400));
 	orchestrator!init();
 	
 }
