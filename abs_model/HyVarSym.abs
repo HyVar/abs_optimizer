@@ -96,9 +96,9 @@ class Instance() implements Instance {
 
 		// sometimes cost increase a lot (seen from the logs
 		// do not know why, probably depends on the scheduler
-		if (random(50) == 0) {
-			cost = truncate(cost * ((100 + random(200))/100));
-		}
+		//if (random(50) == 0) {
+		//	cost = truncate(cost * ((100 + random(200))/100));
+		//}
 		pending_jobs = pending_jobs + 1;
 		log_debug("Instance " + name + " received job. Pending jobs " + toString(pending_jobs));
 		// cost annotation is blocking and therefore needs to be splitted into
@@ -266,7 +266,7 @@ class LoadBalancer(String name,
 			pending_job_list = tail(pending_job_list);
 			// await time (extra work done by haproxy)
 			if (init_time != timeValue(now())) {
-				await duration(1,1);
+					await duration(1,1);
 			}
 		}
 		log_debug(name + " sending job " + job_id);

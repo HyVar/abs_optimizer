@@ -36,25 +36,25 @@ switch_time_slot = 500
 checking_avg_time_interval = 60
 
 # cooling off in time slots (multiple of checking_avg_time_interval)
-cooling_off_time = [300,360,300,300,480]
+cooling_off_time = [300,360,300,300,360]
 
 # initial instances per component
 initial_instances = [1] * len(avg_times)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [ 1000* x for x in [1000,219,1000,1000,192]]
+scaling_in = [ 1000* x for x in [1000,47,1000,1000,224]]
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [ 1000* x for x in [999,111,999,999,106]]
+scaling_out = [ 1000* x for x in [999,4,999,999,212]]
 scaling_out = [max(0,x) for x in scaling_out]
 
 # amount of instance to increase every scale in
 scale_in_amount_list = [0,1,0,0,1]
 #scale_in_amount_list = [0]*5
 # amount of instance to decrease every scale out
-scale_out_amount_list = [0,2,0,0,2]
+scale_out_amount_list = [0,2,0,0,1]
 #scale_out_amount_list = [0]*5
 # drop requests x-> discard x and keep the x + 1
 drop_requests = [0,0,3,0,0]
