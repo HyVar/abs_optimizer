@@ -4,10 +4,19 @@ import math
 instance_base_speed = 1000
 
 # average times in ms
-avg_times = [30,1500,30,70 + 500 + 255,33500]
+
+# component list:
+# encoder
+# hyvarrec
+# decoder
+# variant
+# code
+# c compiler
+# java compiler
+avg_times = [30,1500,30,100,100,33500,100]
 
 # init time for instances in ms
-instance_init_times = [0, (33 + 420)*1000,0,0,(32 + 349)*1000]
+instance_init_times = [0, (33 + 420)*1000,0,0,0,(32 + 349)*1000,0]
 
 # scaling of average running times (x ms is equal to 1 time slot)
 time_scaling_factor = 1000.0
@@ -24,10 +33,10 @@ jobs_per_time_window =  [19,19,16,13,12,11,10,10,10,9,11,10,19,16,18,15,15,20,38
     169,166,167,174,170,165,167,163,180,179,186,177,203,193,
     234,246,251,235,262,280,276,267,253,220,201,166,151,137,
     126,105,90,93,76,67,74,75,68,64,71,65,50,42,40,31,28,27,]
-jobs_per_time_window = [3*x for x in jobs_per_time_window]
+jobs_per_time_window = [1*x for x in jobs_per_time_window]
 
 # if components are more powerful specify them here
-instance_speed = [1000,1000,1000,3000,1000]
+instance_speed = [1000,1000,1000,1000,3000,1000,1000]
 
 # speed consumption after which instances may switch jobs
 switch_time_slot = 500
@@ -36,40 +45,40 @@ switch_time_slot = 500
 checking_avg_time_interval = 60
 
 # cooling off in time slots (multiple of checking_avg_time_interval)
-cooling_off_time = [300,360,300,300,360]
+cooling_off_time = [300,360,300,300,300,360,300]
 
 # initial instances per component
 initial_instances = [1] * len(avg_times)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [ 1000* x for x in [1000,47,1000,1000,224]]
+scaling_in = [ 1000* x for x in [1000,47,1000,1000,1000,224,1000]]
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [ 1000* x for x in [999,4,999,999,212]]
+scaling_out = [ 1000* x for x in [999,4,999,999,999,212,999]]
 scaling_out = [max(0,x) for x in scaling_out]
 
 # amount of instance to increase every scale in
-scale_in_amount_list = [0,1,0,0,1]
+scale_in_amount_list = [0,1,0,0,0,1,0]
 #scale_in_amount_list = [0]*5
 # amount of instance to decrease every scale out
-scale_out_amount_list = [0,2,0,0,1]
+scale_out_amount_list = [0,2,0,0,0,1,0]
 #scale_out_amount_list = [0]*5
 # drop requests x-> discard x and keep the x + 1
-drop_requests = [0,0,3,0,0]
+drop_requests = [0,0,0,0,0,0,0]
 
 
 #scaling_down_ratio (RAT)
 # pending_jobs <  size(keys(instances)) * scaling_down_ratio
 # allows the scalind down
-scaling_down_ratio = ["0","25","0","0","20/20"]
+scaling_down_ratio = ["0","25","0","0","0", "20/20", "0"]
 
 #max_conn (0 means infinite) 
-max_conn = [0,30,0,0,2]
+max_conn = [0,30,0,0,0,2,0]
 
 # parallel_part
-parallel_cost = [0,0,0,0,0]
+parallel_cost = [0,0,0,0,0,0,0]
 
 print "module Settings;"
 print "export *;\n" 
