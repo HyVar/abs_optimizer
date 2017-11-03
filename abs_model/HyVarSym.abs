@@ -11,8 +11,8 @@ def String get_uri() = toString(random(1000000));
 
 def Unit log(String s) = println(s);
 
-def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
-//def Unit log_debug(String s) = Unit;
+//def Unit log_debug(String s) = println("DEBUG " + toString(now()) + ": " + s);
+def Unit log_debug(String s) = Unit;
 
 //def Unit log_error(String s) = println("ERROR " + toString(now()) + ": " + s);
 def Unit log_error(String s) = Unit;
@@ -158,6 +158,7 @@ interface LoadBalancer {
 	Unit init();
   Bool exe(String job_id);  // assign jobs
 	Unit kill(); // kill instance at the end of simulation
+  [HTTPCallable] List<Rat> get_history(); // method used for visualization purposes
 }
 
 class LoadBalancer(String name,
@@ -335,7 +336,12 @@ class LoadBalancer(String name,
 		measure_list = Cons(sumRat(history,-1),measure_list);
 		measure_count_list = Cons(length(history),measure_count_list);
 		history = list[];	
-	}		
+	}
+
+	// get history for visualization purposes
+	List<Rat> get_history() {
+		return history;
+	}	
 			
 	Bool scale() {
 
@@ -414,8 +420,8 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		// create the components in order
 
 		foreach (i in range(length(instance_cost_list()))) {
-			LoadBalancer c = new LoadBalancer(
-					"comp" + toString(i),
+			[HTTPName: "component_" + nth(component_name_list(),i)] LoadBalancer c = new LoadBalancer(
+					nth(component_name_list(),i), // name of component
 					nth(instance_cost_list(),i),  // cost of every single job
 					nth(parallel_cost_list(),i), // additional cost for every insance to process in parallel
 					nth(instance_init_time_list(),i), // time needed to start a new instance
@@ -469,7 +475,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			// wait next time unit to submit the next job
 			await duration(1,1);
 			times = Cons(truncate(timeValue(now())) - time,times);
-			time = head(times);
+			time = truncate(timeValue(now()));
 		}
 		return reverse(times);
 	}
@@ -488,7 +494,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		pending_jobs = pending_jobs + 1;
 
 		// do the first round
-		Fut<List<Int>> f = this!do_round(sublist(components,0,5),job_id);
+		Fut<List<Int>> f = this!do_round(sublist(components,0,4),job_id);
 		await f?;
 		times = f.get;
 

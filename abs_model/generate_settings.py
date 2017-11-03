@@ -1,32 +1,43 @@
 import math
 
-# the instance speed in ms
-instance_base_speed = 1000
+# the instance speed in ms for a timeslot
+instance_base_speed = 500
 
-# average times in ms
+# speed consumption in ms after which instances may switch jobs
+switch_time_slot = 250
 
+# average times in ms for all the components.
 # component list:
-# encoder
-# hyvarrec
-# decoder
-# variant
-# code
-# c compiler
-# java compiler
-avg_times = [30,1500,30,100,100,33500,100]
+#   encoder
+#   hyvarrec
+#   decoder
+#   variant
+#   code
+#   c compiler
+#   java compiler
+
+component_names = [
+	'encoder',
+	'hyvarrec',
+	'decoder',
+  'resolution',
+	'variant_gen',
+	'code_gen',
+	'c_compiler',
+  'java_compiler']
+ 
+avg_times = [30,1500,30,500,30,30,33500,2000]
 
 # init time for instances in ms
-instance_init_times = [0, (33 + 420)*1000,0,0,0,(32 + 349)*1000,0]
+instance_init_times = [0, (33 + 420)*1000,0,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000]
 
-# scaling of average running times (x ms is equal to 1 time slot)
-time_scaling_factor = 1000.0
 
+# number of jobs submitted every time window of 15 minutes
+# traffic pattern is derived from the website data.gov.uk
+# listing the number of cars registered on the A414 highway
+# on Monday,March 2, 2015
 # every time windows is equivalent to x milliseconds
-# check also the average_times variable
-time_window = 15 * 60 * 1000 / time_scaling_factor
-
-# number of jobs submitted every time window
-# note thet here we assume a mapping 1s <-> 15s of real time
+time_window = 15 * 60 * 1000
 jobs_per_time_window =  [19,19,16,13,12,11,10,10,10,9,11,10,19,16,18,15,15,20,38,36,
     46,73,103,95,107,139,198,221,265,270,287,326,334,326,304,259,
     251,231,221,191,172,174,171,161,163,162,169,158,156,173,
@@ -36,61 +47,59 @@ jobs_per_time_window =  [19,19,16,13,12,11,10,10,10,9,11,10,19,16,18,15,15,20,38
 jobs_per_time_window = [1*x for x in jobs_per_time_window]
 
 # if components are more powerful specify them here
-instance_speed = [1000,1000,1000,1000,3000,1000,1000]
+# useful when more components are merged into one
+instance_speed = [instance_base_speed] * len(avg_times)
 
-# speed consumption after which instances may switch jobs
-switch_time_slot = 500
-
-# checking_avg_time_interval (in time slots)
-checking_avg_time_interval = 60
+# checking_avg_time_interval (final result in time slots)
+checking_avg_time_interval = int(math.ceil(float(60) * 1000 / instance_base_speed))
 
 # cooling off in time slots (multiple of checking_avg_time_interval)
-cooling_off_time = [300,360,300,300,300,360,300]
+cooling_off_time = [300 * int(math.ceil(float(1000) / instance_base_speed))] * len(avg_times)
 
 # initial instances per component
 initial_instances = [1] * len(avg_times)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [ 1000* x for x in [1000,47,1000,1000,1000,224,1000]]
+scaling_in = [ 1000* x for x in [1000,47,1000,40,1000,1000,224,200]]
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [ 1000* x for x in [999,4,999,999,999,212,999]]
+scaling_out = [ 1000* x for x in [999,4,999,4,999,999,212,150]]
 scaling_out = [max(0,x) for x in scaling_out]
 
 # amount of instance to increase every scale in
-scale_in_amount_list = [0,1,0,0,0,1,0]
+scale_in_amount_list = [0,1,0,1,0,1,1,1]
 #scale_in_amount_list = [0]*5
 # amount of instance to decrease every scale out
-scale_out_amount_list = [0,2,0,0,0,1,0]
+scale_out_amount_list = [0,1,0,1,0,1,1,1]
 #scale_out_amount_list = [0]*5
 # drop requests x-> discard x and keep the x + 1
-drop_requests = [0,0,0,0,0,0,0]
+drop_requests = [0,0,0,0,0,0,0,0]
 
 
 #scaling_down_ratio (RAT)
 # pending_jobs <  size(keys(instances)) * scaling_down_ratio
-# allows the scalind down
-scaling_down_ratio = ["0","25","0","0","0", "20/20", "0"]
+# allows the scaling down
+scaling_down_ratio = ["0","25","0","20","0", "20/20", "20/20", "20/20"]
 
 #max_conn (0 means infinite) 
-max_conn = [0,30,0,0,0,2,0]
+max_conn = [0,30,0,30,0,0,2,10]
 
 # parallel_part
-parallel_cost = [0,0,0,0,0,0,0]
+parallel_cost = [0] * len(avg_times)
 
 print "module Settings;"
 print "export *;\n" 
-
-# note thet here we assume a mapping 1s <-> 1s of real time
-average_times = [ int(math.ceil(x * instance_base_speed / time_scaling_factor)) for x in avg_times]
-instance_init_time_slots = [ int(math.ceil(x / instance_base_speed)) for x in instance_init_times]
 
 # switch_time_slot
 print "def Int switch_time_slot() = ",
 print switch_time_slot,
 print ";\n"
+
+# checking_avg_time_interval (in time slots)
+print "def List<String> component_name_list() = list",
+print '["{}"];\n'.format('","'.join(component_names))
 
 # checking_avg_time_interval (in time slots)
 print "def Int checking_avg_time_interval() = ",
@@ -107,16 +116,6 @@ print "def List<Int>  cooling_off_time_list() = list",
 print "[%s]" % ",".join([ "cooling_off_time_" + unicode(i) + "()" for i in range(len(cooling_off_time))]),
 print ";\n"
 
-
-# generate initial_instances def
-#if not initial_instances:
-#    for i in average_times:
-#        total_computing_time = i*sum(jobs_per_time_window)
-#        total_time = len(jobs_per_time_window) * time_window
-#        initial_instances.append( max(1,
-#            int(math.ceil(float(total_computing_time)/total_time * 0.5))))
-  
-
 for i in range(len(initial_instances)):
     print "def Int initial_instances_" + unicode(i) + "() = ",
     print initial_instances[i],
@@ -127,7 +126,7 @@ print "[%s]" % ",".join([ "initial_instances_" + unicode(i) + "()" for i in rang
 print ";\n"
 
 # generate instance_cost_list def
-costs = average_times
+costs = avg_times
 print "def List<Int>  instance_cost_list() = list",
 print costs,
 print ";\n"            
@@ -182,6 +181,7 @@ print instance_speed,
 print ";\n"
 
 # instance_init_time_list
+instance_init_time_slots = [ int(math.ceil(float(x) / instance_base_speed)) for x in instance_init_times]
 print "def List<Int>  instance_init_time_list() = list",
 print instance_init_time_slots,
 print ";\n"
@@ -207,19 +207,21 @@ jobs_arrival_times = []
 counter = 0
 for i in jobs_per_time_window:    
         for j in range(i):
-            jobs_arrival_times.append(counter + j * time_window * time_scaling_factor / instance_base_speed / i)
-        counter += time_window * time_scaling_factor / instance_base_speed
+            jobs_arrival_times.append(counter + float(j) * time_window / i)
+        counter += time_window
 
 
-jobs_per_time_slot = {}
-for i in range(int(len(jobs_per_time_window)*time_window * time_scaling_factor/instance_base_speed)):
-    jobs_per_time_slot[i] = 0
-for i in jobs_arrival_times:
-    jobs_per_time_slot[int(i)] += 1
+max_val = instance_base_speed
+ls = [0]
+while jobs_arrival_times:
+    if jobs_arrival_times[0] > max_val:
+			ls.append(0)
+			max_val += instance_base_speed
+    else:
+			ls[-1] += 1
+			jobs_arrival_times.pop(0) 
 
-ls = [ jobs_per_time_slot[x] for x in sorted(jobs_per_time_slot.keys())]
-
-ELEMENTS_PER_LIST = 100000
+ELEMENTS_PER_LIST = 10000
 counter = 0
 if ELEMENTS_PER_LIST < len(ls):
 		print "def List<Int> jobs_per_time_slot() = concatenate(list" + unicode(ls[0:ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter) + "());"
