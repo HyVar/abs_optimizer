@@ -16,21 +16,27 @@ switch_time_slot = 250
 #   c compiler
 #   java compiler
 
-component_names = [
+names = [
 	'encoder',
 	'hyvarrec',
 	'decoder',
-  'resolution',
+  'resolution1',
+	'resolution2',
 	'variant_gen',
 	'code_gen',
 	'c_compiler',
   'java_compiler']
- 
-avg_times = [30,1500,30,500,30,30,33500,2000]
+
+# average time of every component in ms
+avg_times = [10]*len(names)
+avg_times[names.index('hyvarrec')] = 1500
+avg_times[names.index('c_compiler')] = 33500
+avg_times[names.index('java_compiler')] = 2000
 
 # init time for instances in ms
-instance_init_times = [0, (33 + 420)*1000,0,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000,(32 + 349)*1000]
-
+instance_init_times = [0]*len(names)
+#instance_init_times[names.index('hyvarrec')] = (33 + 420)*1000
+#instance_init_times[names.index('c_compiler')] = (32 + 349)*1000
 
 # number of jobs submitted every time window of 15 minutes
 # traffic pattern is derived from the website data.gov.uk
@@ -48,49 +54,65 @@ jobs_per_time_window = [1*x for x in jobs_per_time_window]
 
 # if components are more powerful specify them here
 # useful when more components are merged into one
-instance_speed = [instance_base_speed] * len(avg_times)
+instance_speed = [instance_base_speed] * len(names)
 
 # checking_avg_time_interval (final result in time slots)
 checking_avg_time_interval = int(math.ceil(float(60) * 1000 / instance_base_speed))
 
 # cooling off in time slots (multiple of checking_avg_time_interval)
-cooling_off_time = [300 * int(math.ceil(float(1000) / instance_base_speed))] * len(avg_times)
+cooling_off_time = [300 * int(math.ceil(float(1000) / instance_base_speed))] * len(names)
 
 # initial instances per component
-initial_instances = [1] * len(avg_times)
+initial_instances = [1] * len(names)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [ 1000* x for x in [1000,47,1000,40,1000,1000,224,200]]
+scaling_in = [1000*1000] * len(names)
+scaling_in[names.index('hyvarrec')] = 47*1000
+scaling_in[names.index('c_compiler')] = 224*1000
+scaling_in[names.index('java_compiler')] = 200*1000
+
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [ 1000* x for x in [999,4,999,4,999,999,212,150]]
+scaling_out = [999*1000] * len(names)
+scaling_out[names.index('hyvarrec')] = 4*1000
+scaling_out[names.index('c_compiler')] = 212*1000
+scaling_out[names.index('java_compiler')] = 150*1000
+
 scaling_out = [max(0,x) for x in scaling_out]
 
 # amount of instance to increase every scale in
-scale_in_amount_list = [0,1,0,1,0,1,1,1]
+scale_in_amount_list = [1] * len(names)
 #scale_in_amount_list = [0]*5
 # amount of instance to decrease every scale out
-scale_out_amount_list = [0,1,0,1,0,1,1,1]
+scale_out_amount_list = [1] * len(names)
 #scale_out_amount_list = [0]*5
 # drop requests x-> discard x and keep the x + 1
-drop_requests = [0,0,0,0,0,0,0,0]
+drop_requests = [0] * len(names)
 
 
 #scaling_down_ratio (RAT)
 # pending_jobs <  size(keys(instances)) * scaling_down_ratio
 # allows the scaling down
-scaling_down_ratio = ["0","25","0","20","0", "20/20", "20/20", "20/20"]
+scaling_down_ratio = ["1"] * len(names)
+scaling_down_ratio[names.index('hyvarrec')] = "25"
+scaling_down_ratio[names.index('c_compiler')] = "12/10"
 
 #max_conn (0 means infinite) 
-max_conn = [0,30,0,30,0,0,2,10]
+max_conn = [0]*len(names)
+max_conn[names.index('hyvarrec')] = 30
+max_conn[names.index('c_compiler')] = 30
 
 # parallel_part
-parallel_cost = [0] * len(avg_times)
+parallel_cost = [0] * len(names)
 
 print "module Settings;"
 print "export *;\n" 
+
+print "def Int instance_base_speed() = ",
+print instance_base_speed
+print ";\n"
 
 # switch_time_slot
 print "def Int switch_time_slot() = ",
@@ -99,7 +121,7 @@ print ";\n"
 
 # checking_avg_time_interval (in time slots)
 print "def List<String> component_name_list() = list",
-print '["{}"];\n'.format('","'.join(component_names))
+print '["{}"];\n'.format('","'.join(names))
 
 # checking_avg_time_interval (in time slots)
 print "def Int checking_avg_time_interval() = ",

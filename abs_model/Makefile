@@ -7,7 +7,7 @@ Settings.abs: generate_settings.py # generate the data file
 compile: Settings.abs	HyVarSym.abs	## Compile the model
 	absc -erlang HyVarSym.abs Settings.abs
 
-run: #compile			## Execute the model
+run: compile
 	-rm gen/erl/absmodel/priv/index.html
 	ln -s `pwd`/index.html gen/erl/absmodel/priv/index.html
 	#cp index.html gen/erl/absmodel/priv/index.html

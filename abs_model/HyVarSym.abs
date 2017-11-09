@@ -29,7 +29,7 @@ def Int sumInt(List<Int> ls, Int n) =
 	if (n == 0 || isEmpty(ls)) then 0 else head(ls) + sumInt(tail(ls),n-1);
 
 
-//utility operations on list of Int
+//utility operations on list
 def List<Int> range_step(Int start, Int end, Int step) =
 	if (start >= end)
 	then
@@ -53,7 +53,6 @@ def List<A> sublist<A>(List<A> ls, Int start, Int end) =
 def List<A> remove_first<A>(List<A> ls, Int n) = 
 	if (n < 1) then ls else remove_first(tail(ls),n-1);
 
-
 //************************************************
 // Data Structures
 //************************************************
@@ -62,6 +61,14 @@ data Job = Job(
 	Rat arrival_time,
 	String job_id,
 	Rat finishing_time
+);
+
+data Visualization = Visualization(
+	String name,
+	List<Rat> latencies,
+	List<Int> instances,
+	List<Int> requests,
+	List<Int> pending
 );
 
 //************************************************
@@ -158,7 +165,7 @@ interface LoadBalancer {
 	Unit init();
   Bool exe(String job_id);  // assign jobs
 	Unit kill(); // kill instance at the end of simulation
-  [HTTPCallable] List<Rat> get_history(); // method used for visualization purposes
+	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
 }
 
 class LoadBalancer(String name,
@@ -180,8 +187,15 @@ class LoadBalancer(String name,
 	Map<Instance,Int> instances = map[];
 
 	// finished jobs
-	List<Rat> history = list[]; 
-		
+	List<Rat> history = list[];
+
+	// variables to store information for visualization purposes
+  // information is stored in reversed order every checking_avg_time_interval()
+	List<Int> instances_in_time	= list[];
+	List<Rat> latency_in_time = list[];
+	List<Int> requests_in_time = list[0];
+	List<Int> pending_in_time = list[];
+
 	Bool not_killed = True; // when simulation is finished
 
 	Int pending_jobs = 0;
@@ -236,7 +250,7 @@ class LoadBalancer(String name,
 			instances = put(instances,inst,0);
 			i = i+1;
 		}
-		if (scale_in_amount != 0) {
+		//if (scale_in_amount != 0) { performance improvement when visualization is not needed
 			// do not scale after the first time interval (answers need to be collected)
 			await duration(checking_avg_time_interval(),checking_avg_time_interval());
 			await duration(checking_avg_time_interval(),checking_avg_time_interval());
@@ -252,11 +266,13 @@ class LoadBalancer(String name,
 				}
 				await duration(checking_avg_time_interval(),checking_avg_time_interval());
 			}
-		}	  
+		//}	  
 	}
 
 	Bool exe(String job_id) {
 		pending_jobs = pending_jobs + 1;
+		requests_in_time = Cons(head(requests_in_time)+1,tail(requests_in_time));
+		
 		log_debug(name + " received job " + job_id + ". Running/Pending jobs = " + toString(running_jobs) + "/" + toString(pending_jobs) );
 		Rat init_time = timeValue(now());
 
@@ -295,9 +311,9 @@ class LoadBalancer(String name,
 		log_debug(name + " solved job " + job_id);
 		
 		// save job in history
-		if (scale_in_amount != 0) {
+		//if (scale_in_amount != 0) {
 			history = Cons(timeValue(now()) - init_time,history);
-		}
+		//}
 		log_debug(name + " processed job " + job_id);
 		running_jobs = running_jobs - 1;
 		pending_jobs = pending_jobs - 1;
@@ -335,21 +351,24 @@ class LoadBalancer(String name,
 	Unit update_history() {
 		measure_list = Cons(sumRat(history,-1),measure_list);
 		measure_count_list = Cons(length(history),measure_count_list);
-		history = list[];	
-	}
+		history = list[];
 
-	// get history for visualization purposes
-	List<Rat> get_history() {
-		return history;
-	}	
+		// update variables for visualization purposes
+		instances_in_time	= Cons(size(keys(instances)),instances_in_time);
+		if (head(measure_count_list) != 0) {
+			latency_in_time = Cons(head(measure_list)/head(measure_count_list),latency_in_time);
+		} else {
+			latency_in_time = Cons(-1,latency_in_time);
+		}
+		requests_in_time = Cons(0,requests_in_time);
+		pending_in_time = Cons(pending_jobs,pending_in_time);
+	}
 			
 	Bool scale() {
 
 		//log_debug(name + " history = " + toString(history));
 
-		measure_list = Cons(sumRat(history,-1),measure_list);
-		measure_count_list = Cons(length(history),measure_count_list);
-		history = list[];
+		this.update_history();
 
 		Int m_time = truncate(cooling_off / checking_avg_time_interval());
 		Rat sum_latency = sumRat(measure_list,m_time);
@@ -401,6 +420,24 @@ class LoadBalancer(String name,
 		log_debug(name + " sent killing signal to all instances"); 
 	}
 
+	// get history for visualization purposes
+	Visualization get_history() {
+		List<Rat> latency = list[];
+		foreach (i in latency_in_time) {
+			if (i < 0) {
+				latency = Cons(i,latency);
+			} else {
+				latency = Cons(instance_base_speed()*i + instance_base_speed()/2,latency);
+			}
+		}
+		return Visualization(
+			name,
+			latency,
+			reverse(instances_in_time),
+			reverse(requests_in_time),
+			reverse(pending_in_time) );
+	}
+
 }
 
 
@@ -411,6 +448,7 @@ interface Orchestrator {
 class Orchestrator(List<Int> msg_list) implements Orchestrator {
 
 	List<LoadBalancer> components = list[]; // list of components
+	Map<String,LoadBalancer> components_map = map[];
 
 	Int pending_jobs = 0; // pending jobs
 
@@ -436,6 +474,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 					nth(cooling_off_time_list(),i)
 					);
 			components = appendright(components,c);
+			components_map = insert(components_map, Pair(nth(component_name_list(),i),c));
 		}
 
 		// instances initialized
@@ -480,6 +519,16 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		return reverse(times);
 	}
 
+
+	// used to call sequentially some components whose name is contained in ys
+	List<LoadBalancer> get_components_by_name(List<String> ys) {
+		List<LoadBalancer> ls = list[];
+		foreach (i in ys) {
+			ls = Cons(lookupUnsafe(components_map,i),ls);
+		}
+		return reverse(ls);
+	}
+
 	Unit send_job() {
 
 		job_counter = job_counter + 1;
@@ -494,19 +543,44 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		pending_jobs = pending_jobs + 1;
 
 		// do the first round
-		Fut<List<Int>> f = this!do_round(sublist(components,0,4),job_id);
+		List<LoadBalancer> first_round = this.get_components_by_name(
+			list[
+				"encoder",
+				"hyvarrec",
+				"decoder" ]);				
+		Fut<List<Int>> f = this!do_round(first_round,job_id);
 		await f?;
 		times = f.get;
 
 		// do the three following rounds in parallel
+		List<LoadBalancer> second_round_a = this.get_components_by_name(
+			list[
+				"resolution1",
+				"resolution2",
+				"encoder",
+				"hyvarrec",
+				"decoder",
+				"variant_gen",
+				"code_gen",
+				"c_compiler"]);
+
+		List<LoadBalancer> second_round_b_and_c = this.get_components_by_name(
+			list[
+				"resolution1",
+				"resolution2",
+				"encoder",
+				"hyvarrec",
+				"decoder",
+				"variant_gen",
+				"code_gen",
+				"java_compiler"]);
+
 		List<Fut<List<Int>>> fs = list[];
 		foreach (i in range(3)) {
-			if (i != 0) { // round for ECU B and C
-				f = this!do_round(
-					appendright(sublist(components,0,5),nth(components,6)),
-					job_id);
+			if (i % 3 != 0) { // round for ECU B and C
+				f = this!do_round(second_round_a,job_id);
 			} else { // round for ECU A
-				f = this!do_round(sublist(components,0,6),job_id);
+				f = this!do_round(second_round_b_and_c,job_id);
 			}
 			fs = appendright(fs,f);
 		}			
