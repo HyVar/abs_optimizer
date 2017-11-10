@@ -54,7 +54,7 @@ def List<A> remove_first<A>(List<A> ls, Int n) =
 	if (n < 1) then ls else remove_first(tail(ls),n-1);
 
 def List<Int> sum_lists(List<Int> xs, List<Int> ys) =
-	if xs == Nil
+	if (xs == Nil || ys == Nil)
 	then
 		Nil
 	else
