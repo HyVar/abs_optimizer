@@ -13,23 +13,76 @@
 
 
   </head>
-  <!--
+
 	<body>
     <div id="tabs">
       <ul>
-				<li><a href="#per-component">Components</a></li>
-				<li><a href="#common">Caas</a></li>
-        <!-- <li><a href="#per-component">Components</a></li> 
       </ul>
-       <div id="common">
-        <div id="times-est" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-        <div id="times-act" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-      </div> 
-      <div id="per-component">
-      </div>
     </div>
-  </body>-->
-    <script type="text/javascript">
+  </body>
+
+  <script type="text/javascript">
+
+
+
+/**
+ * In order to synchronize tooltips and crosshairs, override the
+ * built-in events with handlers defined on the parent element.
+ */
+function my_override(container_id) {
+	$(container_id).bind('mousemove touchmove touchstart', function (e) {
+		  var chart,
+		      point,
+		      i,
+		      event;
+
+		  for (i = 0; i < Highcharts.charts.length; i = i + 1) {
+		      chart = Highcharts.charts[i];
+		      event = chart.pointer.normalize(e.originalEvent); // Find coordinates within the chart
+		      point = chart.series[0].searchPoint(event, true); // Get the hovered point
+
+		      if (point) {
+		          point.highlight(e);
+		      }
+		  }
+	});
+}
+
+/**
+ * Override the reset function, we don't need to hide the tooltips and crosshairs.
+ */
+Highcharts.Pointer.prototype.reset = function () {
+    return undefined;
+};
+
+/**
+ * Highlight a point by showing tooltip, setting hover state and draw crosshair
+ */
+Highcharts.Point.prototype.highlight = function (event) {
+    this.onMouseOver(); // Show the hover marker
+    this.series.chart.tooltip.refresh(this); // Show the tooltip
+    this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+};
+
+/**
+ * Synchronize zooming through the setExtremes event handler.
+ */
+function syncExtremes(e) {
+    var thisChart = this.chart;
+
+    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+        Highcharts.each(Highcharts.charts, function (chart) {
+            if (chart !== thisChart) {
+                if (chart.xAxis[0].setExtremes) { // It is null while updating
+                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
+                }
+            }
+        });
+    }
+}
+
+
+
 
 function to_highchart_date(startdate, offset) {
     return startdate + (offset * 60 * 1000);
@@ -182,7 +235,8 @@ function build_request_plot(container_id,name,requests,pending) {
 				        text: name
 				    },
 				    xAxis: [{
-				        type: 'datetime',
+				        
+								type: 'datetime',
 				        dateTimeLabelFormats: {
 				            month: '%e. %b',
 				            year: '%b'
@@ -226,6 +280,87 @@ function build_request_plot(container_id,name,requests,pending) {
 }
 
 
+function add_sync_plot(container_id,name,y_axis,data_list,unit_of_measure) {
+		var series = [];
+		series.push({
+				name: name,
+				type: 'line',
+				turboThreshold: 0,
+				tooltip: { valueSuffix: ' ' + unit_of_measure },
+				data: data_list.map( function(item,index) {
+		                         return {
+		                             x: to_highchart_date(0, index),
+		                             y: item
+		                         };
+		                     }).filter( function(item) {
+																				  return item.y >= 0;
+														 						})
+		});
+
+		var new_container_id = container_id + '_sync_plot_' + name;
+		$("#" + container_id).append('<div id="' + new_container_id + '" style="min-width: 310px; min-height: 300px; height: 300px; margin: 0 auto"></div>');
+		
+		Highcharts.chart(new_container_id, {
+            chart: {
+                marginLeft: 60, // Keep all charts left aligned
+                spacingTop: 40,
+                spacingBottom: 20,
+								zoomType: 'x'
+            },
+            title: {
+                text: name,
+                align: 'left',
+                margin: 0,
+                x: 30
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                enabled: false
+            },
+				    xAxis: {
+				        type: 'datetime',
+				        dateTimeLabelFormats: {
+				            month: '%e. %b',
+				            year: '%b'
+				        },
+				        title: {
+				            text: 'Time'
+				        },
+                crosshair: true,
+                events: {
+                    setExtremes: syncExtremes
+                }
+				    },
+            yAxis: {
+                title: {
+                    text: y_axis
+                }
+            },
+            tooltip: {
+                positioner: function () {
+                    return {
+                        x: this.chart.chartWidth - this.label.width, // right aligned
+                        y: 10 // align to title
+                    };
+                },
+                borderWidth: 0,
+                backgroundColor: 'none',
+                pointFormat: '{point.y}',
+                headerFormat: '',
+                shadow: false,
+                style: {
+                    fontSize: '18px'
+                },
+                valueDecimals: 0
+            },
+            series: series
+        });
+		my_override('#'+new_container_id);
+
+}
+
 
 function printInConsole(obj, str = ""){
 		var output = str;
@@ -263,20 +398,23 @@ function loadJSON(){
 										$('<li><a href="#' + item + '">' + result['result']['name'] + '</a></li>').appendTo(ul);
 										tabs.append('<div id="' + item + '"> </div>');
 										sort_tabs(tabs);
+									
+//										build_component_plot('#'+item, result['name'], result['result']['latencies'],result['result']['instances']);
+//										build_request_plot('#'+item, result['name'], result['result']['requests'],result['result']['pending'])
 
-										/*$("#tabs ul:first" ).append(
-											$('<li>').append(
-        								$('<a>').attr('href','#'+item).append(result['name'])));
-										console.log($("#tabs ul:first" ).text());
-										$("#tabs" ).append(
-											$('<div>').attr('id',item)); */
-										build_component_plot('#'+item, result['name'], result['result']['latencies'],result['result']['instances']);
-										build_request_plot('#'+item, result['name'], result['result']['requests'],result['result']['pending']) 
+										add_sync_plot(item, "Latency", "", result['result']['latencies'], "ms");
+										add_sync_plot(item, "Instances", "", result['result']['instances'], "");
+										add_sync_plot(item, "Requests", "", result['result']['requests'], "");
+										add_sync_plot(item, "Pending", "", result['result']['pending'], "");
+										
+										
 										//printInConsole(data,"step "); 
 								});
 						});
 				});
 }
+
+
 
 /*
     $.getJSON("/o/Component1/measure_list")
@@ -294,11 +432,6 @@ $(document).ready(function(){
 });
   </script>
 
-	<body>
-    <div id="tabs">
-      <ul>
-      </ul>
-    </div>
-  </body>
+
 
 </html>
