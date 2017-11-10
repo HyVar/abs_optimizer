@@ -53,6 +53,13 @@ def List<A> sublist<A>(List<A> ls, Int start, Int end) =
 def List<A> remove_first<A>(List<A> ls, Int n) = 
 	if (n < 1) then ls else remove_first(tail(ls),n-1);
 
+def List<Int> sum_lists(List<Int> xs, List<Int> ys) =
+	if xs == Nil
+	then
+		Nil
+	else
+		Cons(head(xs) + head(ys), sum_lists(tail(xs),tail(ys)));
+
 //************************************************
 // Data Structures
 //************************************************
@@ -443,6 +450,7 @@ class LoadBalancer(String name,
 
 interface Orchestrator {
 	Unit init();
+	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
 }
 
 class Orchestrator(List<Int> msg_list) implements Orchestrator {
@@ -453,6 +461,15 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	Int pending_jobs = 0; // pending jobs
 
 	Int job_counter = 0; // job counter to drop some packages if needed
+
+	// variables to store information for visualization purposes
+  // information is stored in reversed order every checking_avg_time_interval()
+	List<Int> instances_in_time	= list[];
+	List<Rat> latency_in_time = list[];
+	List<Int> requests_in_time = list[0];
+	List<Int> pending_in_time = list[];
+	Rat sum_latency = 0;
+	Int count_latency = 0;
 
 	Unit init() {
 		// create the components in order
@@ -482,17 +499,24 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			c!init();
 		}
 
+		Int counter = 0;
 		// send the messages
 		foreach (i in msg_list) {
 			foreach (j in range(i)) {
         this!send_job();
 			}
 			await duration(1,1);
+			counter = counter + 1;
+			if (counter % checking_avg_time_interval() == 0)
+				this.update_history();
 		}
 
 		// wait all the messages to be process
 		while (pending_jobs != 0) {
-			await duration(1,1);	
+			await duration(1,1);
+			counter = counter + 1;
+			if (counter % checking_avg_time_interval() == 0)
+				this.update_history();
 		}
 
 		// kill component instances
@@ -502,6 +526,50 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		}
 		
 		println("simulation_ended," + toString(timeValue(now())));
+	}
+
+	// update the history (to be colled every checking_avg_time_interval)
+	Unit update_history() {
+		// update variables for visualization purposes
+		if (count_latency != 0) {
+			latency_in_time = Cons(sum_latency/count_latency,latency_in_time);
+		} else {
+			latency_in_time = Cons(-1,latency_in_time);
+		}
+		requests_in_time = Cons(0,requests_in_time);
+		pending_in_time = Cons(pending_jobs,pending_in_time);
+
+		// reset variables
+		sum_latency = 0;
+		count_latency = 0;
+	}
+
+	// get history for visualization purposes
+	Visualization get_history() {
+		instances_in_time = Nil;
+		foreach (i in components) {
+			Visualization v = i.get_history();
+			if (instances_in_time == Nil) {
+				instances_in_time = instances(v);
+			} else {
+				instances_in_time = sum_lists(instances_in_time,instances(v));
+			}
+		}
+
+		List<Rat> latency = list[];
+		foreach (i in latency_in_time) {
+			if (i < 0) {
+				latency = Cons(i,latency);
+			} else {
+				latency = Cons(instance_base_speed()*i + instance_base_speed()/2,latency);
+			}
+		}
+		return Visualization(
+			"__global__",
+			latency,
+			instances_in_time,
+			reverse(requests_in_time),
+			reverse(pending_in_time) );
 	}
 
 	// return the times taken by sending jobs in sequence to a list of components
@@ -532,6 +600,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	Unit send_job() {
 
 		job_counter = job_counter + 1;
+		requests_in_time = Cons(head(requests_in_time)+1,tail(requests_in_time));
 		Int counter = job_counter;
 		
 		String job_id = toString(counter);
@@ -591,9 +660,11 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			times = concatenate(times,times_aux);
 		}
 		
-		pending_jobs = pending_jobs - 1;
-		
+		pending_jobs = pending_jobs - 1;	
 		Int end_time = truncate(timeValue(now()));
+		sum_latency = sum_latency + end_time - init_time;
+		count_latency = count_latency + 1;
+
 		String s = "job," + toString(init_time) + "," + toString(end_time) + "," + toString(end_time-init_time);
 		foreach (t in times) {
 			s = s + "," + toString(t);
@@ -618,7 +689,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	[HTTPName: "__global___"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
 	orchestrator!init();
 	
 }

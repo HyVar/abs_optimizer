@@ -82,7 +82,7 @@ def List<Int> parallel_cost_list() = list [0, 0, 0, 0, 0, 0, 0, 0, 0] ;
 
 def List<Int>  instance_speed_list() = list [500, 500, 500, 500, 500, 500, 500, 500, 500] ;
 
-def List<Int>  instance_init_time_list() = list [0, 0, 0, 0, 0, 0, 0, 0, 0] ;
+def List<Int>  instance_init_time_list() = list [0, 906, 0, 0, 0, 0, 0, 762, 0] ;
 
 def List<Int>  drop_requests() = list [0, 0, 0, 0, 0, 0, 0, 0, 0] ;
 

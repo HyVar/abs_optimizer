@@ -35,8 +35,8 @@ avg_times[names.index('java_compiler')] = 2000
 
 # init time for instances in ms
 instance_init_times = [0]*len(names)
-#instance_init_times[names.index('hyvarrec')] = (33 + 420)*1000
-#instance_init_times[names.index('c_compiler')] = (32 + 349)*1000
+instance_init_times[names.index('hyvarrec')] = (33 + 420)*1000
+instance_init_times[names.index('c_compiler')] = (32 + 349)*1000
 
 # number of jobs submitted every time window of 15 minutes
 # traffic pattern is derived from the website data.gov.uk
