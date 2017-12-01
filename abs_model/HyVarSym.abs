@@ -624,31 +624,40 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		// do the three following rounds in parallel
 		List<LoadBalancer> second_round_a = this.get_components_by_name(
 			list[
-				"resolution1",
-				"resolution2",
+				"resolution_spl",
+				"resolution_conf",
 				"encoder",
 				"hyvarrec",
 				"decoder",
+				"delta_enc",
 				"variant_gen",
 				"code_gen",
 				"c_compiler"]);
 
 		List<LoadBalancer> second_round_b_and_c = this.get_components_by_name(
 			list[
-				"resolution1",
-				"resolution2",
+				"resolution_spl",
+				"resolution_conf",
 				"encoder",
 				"hyvarrec",
 				"decoder",
+				"delta_enc",
 				"variant_gen",
 				"code_gen",
 				"java_compiler"]);
 
+		List<LoadBalancer> second_round_car = this.get_components_by_name(
+			list[
+				"delta_enc"]);
+
+
 		List<Fut<List<Int>>> fs = list[];
-		foreach (i in range(3)) {
-			if (i % 3 != 0) { // round for ECU B and C
+		foreach (i in range(4)) {
+			if (i % 4 == 0) { // round for car
+				f = this!do_round(second_round_car,job_id);
+			} else if (i % 4 == 1) {
 				f = this!do_round(second_round_a,job_id);
-			} else { // round for ECU A
+			} else { // round for ECU B and C
 				f = this!do_round(second_round_b_and_c,job_id);
 			}
 			fs = appendright(fs,f);
