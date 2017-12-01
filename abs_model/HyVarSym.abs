@@ -471,6 +471,12 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	Rat sum_latency = 0;
 	Int count_latency = 0;
 
+	// Sequential flows of components
+	List<LoadBalancer> first_round = list[];
+	List<LoadBalancer> second_round_a = list[];
+	List<LoadBalancer> second_round_b_and_c = list[];
+	List<LoadBalancer> second_round_car = list[];
+
 	Unit init() {
 		// create the components in order
 
@@ -493,6 +499,38 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			components = appendright(components,c);
 			components_map = insert(components_map, Pair(nth(component_name_list(),i),c));
 		}
+
+		// update the flows with the right components
+		first_round = map((String i) => lookupUnsafe(components_map,i))(
+			list[
+				"encoder",
+				"hyvarrec",
+				"decoder"]);	
+		second_round_a = map((String i) => lookupUnsafe(components_map,i))(
+			list[
+				"resolution_spl",
+				"resolution_conf",
+				"encoder",
+				"hyvarrec",
+				"decoder",
+				"delta_enc",
+				"variant_gen",
+				"code_gen",
+				"c_compiler"]);
+		second_round_b_and_c = map((String i) => lookupUnsafe(components_map,i))(
+				list[
+					"resolution_spl",
+					"resolution_conf",
+					"encoder",
+					"hyvarrec",
+					"decoder",
+					"delta_enc",
+					"variant_gen",
+					"code_gen",
+					"java_compiler"]);
+		second_round_car = map((String i) => lookupUnsafe(components_map,i))(
+			list[
+				"delta_enc"]);
 
 		// instances initialized
 		foreach (c in components) {
@@ -587,16 +625,6 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		return reverse(times);
 	}
 
-
-	// used to call sequentially some components whose name is contained in ys
-	List<LoadBalancer> get_components_by_name(List<String> ys) {
-		List<LoadBalancer> ls = list[];
-		foreach (i in ys) {
-			ls = Cons(lookupUnsafe(components_map,i),ls);
-		}
-		return reverse(ls);
-	}
-
 	Unit send_job() {
 
 		job_counter = job_counter + 1;
@@ -612,45 +640,11 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		pending_jobs = pending_jobs + 1;
 
 		// do the first round
-		List<LoadBalancer> first_round = this.get_components_by_name(
-			list[
-				"encoder",
-				"hyvarrec",
-				"decoder" ]);				
 		Fut<List<Int>> f = this!do_round(first_round,job_id);
 		await f?;
 		times = f.get;
 
 		// do the three following rounds in parallel
-		List<LoadBalancer> second_round_a = this.get_components_by_name(
-			list[
-				"resolution_spl",
-				"resolution_conf",
-				"encoder",
-				"hyvarrec",
-				"decoder",
-				"delta_enc",
-				"variant_gen",
-				"code_gen",
-				"c_compiler"]);
-
-		List<LoadBalancer> second_round_b_and_c = this.get_components_by_name(
-			list[
-				"resolution_spl",
-				"resolution_conf",
-				"encoder",
-				"hyvarrec",
-				"decoder",
-				"delta_enc",
-				"variant_gen",
-				"code_gen",
-				"java_compiler"]);
-
-		List<LoadBalancer> second_round_car = this.get_components_by_name(
-			list[
-				"delta_enc"]);
-
-
 		List<Fut<List<Int>>> fs = list[];
 		foreach (i in range(4)) {
 			if (i % 4 == 0) { // round for car
