@@ -1,7 +1,7 @@
 import math
 
 """
-process the logs of the hyvarsymexac simulator
+process the logs of the hyvarsym simulator
 
 Usage: .py <log file> prefix_of_output files
 """
@@ -17,12 +17,12 @@ TIME_SLICE = 60
 
 components = []
 
-def get_comp_num(s):
+def get_comp(s):
     global components
-    n = int(s[4:])
-    if n not in components:
-        components.append(n)
-    return n
+    s = s.rstrip()
+    if s not in components:
+        components.append(s)
+    return s
 
 def main(argv):
     """
@@ -64,10 +64,10 @@ def main(argv):
         for line in f.readlines():
             if line.startswith("scale_in"):
                 ls = line.split(",")
-                scale_in.append((get_comp_num(ls[2]), int(ls[1]))) 
+                scale_in.append((get_comp(ls[2]), int(ls[1]))) 
             elif line.startswith("scale_out"): 
                 ls = line.split(",")
-                scale_out.append((get_comp_num(ls[2]), int(ls[1])))
+                scale_out.append((get_comp(ls[2]), int(ls[1])))
             elif line.startswith("job"):
                 ls = line.split(",")
                 jobs.append([ int(x) for x in ls[1:]])
@@ -95,7 +95,7 @@ def main(argv):
     logging.debug("scale_out decisions : " + unicode(minus))
     val = { x:0 for x in components }
     with open(prefix + "_vm.csv", "w") as f:
-        f.write("time," + unicode([ "comp" + unicode(x) for x in components])[1:-1] + "\n")
+        f.write("time," + ",".join(components) + "\n")
         for i in range(0,end,TIME_SLICE):
             for j in components:
                 for k in range(i,i+TIME_SLICE):
@@ -103,7 +103,7 @@ def main(argv):
                       val[j] += plus[j][k]
                   if k in minus[j]:
                       val[j] -= minus[j][k]
-            f.write( unicode(i) + "," + unicode([ val[x] for x in components])[1:-1]  + "\n")
+            f.write( unicode(i) + "," + ",".join([ unicode(val[x]) for x in components])  + "\n")
     
 
     # process jobs
@@ -112,7 +112,7 @@ def main(argv):
     with open(prefix + "_jobs.csv", "w") as f:
         f.write("job_id,start,end,latency")
         for i in range(len(jobs[0])-3):
-            f.write(",comp" + unicode(i))
+            f.write(",round" + unicode(i))
         f.write("\n")
         for i in jobs:
             f.write(unicode(counter))
