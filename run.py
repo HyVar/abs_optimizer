@@ -142,7 +142,7 @@ def main(argv):
         lines = f.readlines();
     
     # parsing parameters in the parameter file
-    # todo: consider also ordinal and categorical parameters
+    # todo: consider also categorical parameters
     parameters = {}
     for i in lines:
         # expression to match
@@ -198,8 +198,10 @@ def main(argv):
 
     log.info('Running model compiled in directory ' + new_dir)
         
-    #out = simple_run(new_dir)
-    out = detect_fast_crash_with_files(new_dir)
+    if settings.OUTPUT_TIMEOUT < 0:
+      out = simple_run(new_dir)
+    else:    
+      out = detect_fast_crash_with_files(new_dir)
     
     if not out:
         log.info("Detected a crash, try another attempt")

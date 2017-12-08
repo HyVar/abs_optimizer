@@ -20,7 +20,8 @@ TIMEOUT = 3600
 
 # timeout during the computation to expect at least some output (seconds)
 # check every
-OUTPUT_TIMEOUT = 30
+# if value is -1 the check is not performed and the program is assumed to be correct
+OUTPUT_TIMEOUT = -1 #30
 # times without any output to detect that simulation is hanging
 ERROR_NUMBER = 2
 
