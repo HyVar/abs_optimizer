@@ -158,12 +158,21 @@ For more parameters we invite the reader to consult the
 ### Running ABS POPT
 
 After the models has been copied, all the parameters setting fixed,
-ABS POPT can be run by invoking the command `run_smac_parallel.sh` within the 
+ABS POPT can be run by invoking the following command within the 
 Docker container.
 
-By default this tool will invoke two runs of SMAC that will be executed
+```
+./run_smac_parallel.sh
+```
+
+By default this tool will invoke 2 runs of SMAC that will be executed
 in parallel. Depending on the hardware, it is possible to configure
 the parallel runs of SMAC by setting the bash variable `PAR_PROC`.
+
+It is recommended to run this command that can take long by using the
+`screen` utility. In this way it will be possible to monitor also the
+resource consumption of the Docker container and visualize the logs of the
+SMAC executions.
 
 The output of the tool will be saved in the directory `smac-output/test`
 following the output syntax of SMAC (the logs of the single execution of SMAC 
@@ -194,6 +203,15 @@ the following command.
 
 ```
 ./run_smac_parallel.sh --restore
+```
+
+### Cleaning
+
+To clean up the Docker installation, the following commands can be used.
+
+```
+sudo docker rm abs_popt_container
+sudo docker rmi jacopomauro/abs_popt
 ```
 
 ## Using the Numascale cluster

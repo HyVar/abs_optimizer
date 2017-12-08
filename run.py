@@ -49,8 +49,7 @@ def simple_run(new_dir):
                   "./gen/erl/run", "-l", unicode(settings.CLOCK_LIMIT) ],
           stdout=PIPE, stderr=PIPE, cwd=new_dir )    
     out, err = proc.communicate()
-    run_time = time.time() - start_time
-    log.debug('Stdout of abs compilation')
+    log.debug('Stderr of abs compilation')
     log.debug(err)
     return out
 
