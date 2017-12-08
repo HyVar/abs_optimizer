@@ -162,14 +162,14 @@ ABS POPT can be run by invoking the following command within the
 Docker container.
 
 ```
-./run_smac_parallel.sh
+./run_smac.sh
 ```
 
-By default this tool will invoke 2 runs of SMAC that will be executed
-in parallel. Depending on the hardware, it is possible to configure
-the parallel runs of SMAC by setting the bash variable `PAR_PROC`.
+By default this tool will invoke SMAC. Depending on the hardware, it is
+possible to configure the parallel runs of SMAC by setting the bash variable
+`PAR_PROC` to the number of desired parallel SMAC executions.
 
-It is recommended to run this command that can take long by using the
+It is recommended to run this command by using the
 `screen` utility. In this way it will be possible to monitor also the
 resource consumption of the Docker container and visualize the logs of the
 SMAC executions.
@@ -189,20 +189,20 @@ This runs the SMAC utility to merge the parallel computation of SMAC creating
 a new merge state in the directory `smac-output/merge`.  It will also output
 the settings of the best simulation run so far and its quality.
 
-Note that the `run_smac_parallel.sh` can be run also to resume a finish computation
+Note that the `run_smac.sh` can be run also to resume a finish computation
 to refine and possibly find better parameters.
 Assuming that the previous `merge_states.sh` has been run, this can be done
 by running the following command.
 
 ```
-./run_smac_parallel.sh --warmup smac-output/merge
+./run_smac.sh --warmup smac-output/merge
 ```
 
 In case the computation of SMAC has been interrupted it can be resumed by running
 the following command.
 
 ```
-./run_smac_parallel.sh --restore
+./run_smac.sh --restore
 ```
 
 ### Cleaning
@@ -228,7 +228,7 @@ can be invoked.
 
 ```
 
-As was happening with the `run_smac_parallel.sh` bash script, the number of 
+As was happening with the `run_smac.sh` bash script, the number of 
 times SMAC is run in parallel can be configured by setting the variable
 `PAR_PROC`. By default, every execution of SMAC will use the computational 
 resources of a node and therefore `PAR_PROC` should be less than the number of 
