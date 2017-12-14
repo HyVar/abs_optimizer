@@ -28,59 +28,68 @@
 /**
  * In order to synchronize tooltips and crosshairs, override the
  * built-in events with handlers defined on the parent element.
+ * https://stackoverflow.com/questions/36437297/highcharts-synchronized-charts-display-tooltip
  */
 function my_override(container_id) {
 	$(container_id).bind('mousemove touchmove touchstart', function (e) {
-		  var chart,
-		      point,
-		      i,
-		      event;
+    var chart, point, i, event;
 
-		  for (i = 0; i < Highcharts.charts.length; i = i + 1) {
-		      chart = Highcharts.charts[i];
-		      event = chart.pointer.normalize(e.originalEvent); // Find coordinates within the chart
-		      point = chart.series[0].searchPoint(event, true); // Get the hovered point
+    var charts = $(this).children('div');
 
-		      if (point) {
-		          point.highlight(e);
-		      }
-		  }
+    for (i = 0; i < charts.length; i = i + 1) {
+        chart = $(charts[i]).highcharts();
+        if (!chart) continue;
+        // Find coordinates within the chart
+        event = chart.pointer.normalize(e.originalEvent); 
+
+        var points = [];
+        for (j = 0; j < chart.series.length; j = j + 1) {
+            serie = chart.series[j];
+            if (!serie.visible || serie.enableMouseTracking === false) continue;
+
+            point = serie.searchPoint(event, true);
+            // Get the hovered point
+            if (point) points.push(point); 
+        }
+
+        if (points.length) {
+            if (chart.tooltip.shared) {
+                chart.tooltip.refresh(points);
+            } else {
+                chart.tooltip.refresh(points[0]);
+            }
+            chart.xAxis[0].drawCrosshair(e, points[0]);
+        }
+    }
 	});
 }
+
 
 /**
  * Override the reset function, we don't need to hide the tooltips and crosshairs.
  */
-Highcharts.Pointer.prototype.reset = function () {
-    return undefined;
-};
-
-/**
- * Highlight a point by showing tooltip, setting hover state and draw crosshair
- */
-Highcharts.Point.prototype.highlight = function (event) {
-    this.onMouseOver(); // Show the hover marker
-    this.series.chart.tooltip.refresh(this); // Show the tooltip
-    this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+Highcharts.Pointer.prototype.reset = function() {
+  return undefined;
 };
 
 /**
  * Synchronize zooming through the setExtremes event handler.
  */
 function syncExtremes(e) {
-    var thisChart = this.chart;
+  var thisChart = this.chart;
 
-    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
-        Highcharts.each(Highcharts.charts, function (chart) {
-            if (chart !== thisChart) {
-                if (chart.xAxis[0].setExtremes) { // It is null while updating
-                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
-                }
-            }
-        });
-    }
+  if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+    Highcharts.each(Highcharts.charts, function(chart) {
+      if (chart !== thisChart) {
+        if (chart.xAxis[0].setExtremes) { // It is null while updating
+          chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, {
+            trigger: 'syncExtremes'
+          });
+        }
+      }
+    });
+  }
 }
-
 
 
 
@@ -88,202 +97,10 @@ function to_highchart_date(startdate, offset) {
     return startdate + (offset * 60 * 1000);
 }
 
-function build_component_plot(container_id,name,latencies,instances) {
-    if (latencies.length > 0) {
-        new_container_id = 'c' + container_id;
-        $(container_id).append('<h3> Latency vs VMs </h3>');
-        $(container_id).append('<div id="' + new_container_id + '" style="min-width: 310px; min-height: 400px; height: 400px; margin: 0 auto"></div>');
-
-        var series = [];
-				series.push({
-						name: 'Latency',
-						type: 'line',
-						turboThreshold: 0,
-						tooltip: { valueSuffix: ' ms'},
-				    data: latencies.map( function(item,index) {
-				                         return {
-				                             x: to_highchart_date(0, index),
-				                             y: item
-				                             //name: 'aa'//item.trdT
-				                         };
-				                     }).filter( function(item) {
-																				  return item.y > 0;
-														 						})
-				});
-				series.push({
-						name: 'Instances',
-						type: 'line',
-						turboThreshold: 0,
-						yAxis: 1,
-				    data: instances.map( function(item,index) {
-				                         return {
-				                             x: to_highchart_date(0, index),
-				                             y: item
-				                         };
-				                     })});
-				Highcharts.chart(new_container_id, {
-				    chart: {
-				        zoomType: 'xy'
-				    },
-				    title: {
-				        text: name
-				    },
-				    xAxis: [{
-				        type: 'datetime',
-				        dateTimeLabelFormats: {
-				            month: '%e. %b',
-				            year: '%b'
-				        },
-				        title: {
-				            text: 'Time'
-				        }
-				    }],
-				    yAxis: [
-							{
-				        title: {
-				            text: 'Latency',
-										style: {
-						          color: Highcharts.getOptions().colors[0]
-						      	}
-				        },
-				        min: 0,
-								labels: {
-						      format: '{value} ms',
-						      style: {
-						          color: Highcharts.getOptions().colors[0]
-						      }
-				        }
-					    },
-							{
-				        title: {
-				            text: 'Instances',
-										style: {
-						          color: Highcharts.getOptions().colors[1]
-						      	}
-				        },
-				        min: 0,
-								opposite: true,
-								labels: {
-									format: '{value}',
-						      style: {
-						          color: Highcharts.getOptions().colors[1]
-						      }
-				        }
-					    }
-						],
-				    tooltip: {
-				        xDateFormat: '%Y-%m-%d',
-				        headerFormat: '<b>{series.name}</b><br>',
-				        pointFormat: '<b>{point.y:.2f}t</b> {point.name} at {point.x:%H:%m}'
-				    },
-				    plotOptions: {
-				        line: {
-				            marker: {
-				                enabled: false
-				            }
-				        }
-				    },
-						legend: {
-								layout: 'vertical',
-								align: 'left',
-								x: 120,
-								verticalAlign: 'top',
-								y: 100,
-								floating: true,
-								backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-						},
-				    series: series
-				});
-
-    }
-}
-
-function build_request_plot(container_id,name,requests,pending) {
-    if (requests.length > 0) {
-        new_container_id = 'creq' + container_id;
-        $(container_id).append('<h3> Requests arrived vs Pending </h3>');
-        $(container_id).append('<div id="' + new_container_id + '" style="min-width: 310px; min-height: 400px; height: 400px; margin: 0 auto"></div>');
-
-        var series = [];
-				series.push({
-						name: 'Requests arrived',
-						type: 'line',
-						turboThreshold: 0,
-						data: requests.map( function(item,index) {
-				                         return {
-				                             x: to_highchart_date(0, index),
-				                             y: item
-				                             //name: 'aa'//item.trdT
-				                         };
-				                     })
-				});
-				series.push({
-						name: 'Pending requests',
-						type: 'line',
-						turboThreshold: 0,
-						data: pending.map( function(item,index) {
-				                         return {
-				                             x: to_highchart_date(0, index),
-				                             y: item
-				                         };
-				                     })});
-				Highcharts.chart(new_container_id, {
-				    chart: {
-				        zoomType: 'xy'
-				    },
-				    title: {
-				        text: name
-				    },
-				    xAxis: [{
-				        
-								type: 'datetime',
-				        dateTimeLabelFormats: {
-				            month: '%e. %b',
-				            year: '%b'
-				        },
-				        title: {
-				            text: 'Time'
-				        }
-				    }],
-				    yAxis: [
-							{
-				        title: {
-				            text: '# of requests',
-				        },
-				        min: 0
-					    }
-						],
-				    tooltip: {
-				        xDateFormat: '%Y-%m-%d',
-				        headerFormat: '<b>{series.name}</b><br>',
-				        pointFormat: '<b>{point.y:.2f}t</b> {point.name} at {point.x:%H:%m}'
-				    },
-				    plotOptions: {
-				        line: {
-				            marker: {
-				                enabled: false
-				            }
-				        }
-				    },
-						legend: {
-								layout: 'vertical',
-								align: 'left',
-								x: 120,
-								verticalAlign: 'top',
-								y: 100,
-								floating: true,
-								backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-						},
-				    series: series
-				});
-    }
-}
-
-
-function add_sync_plot(container_id,name,y_axis,data_list,unit_of_measure) {
+function add_sync_plot(container_id,name,y_axis,data_list,real_data_list,unit_of_measure) {
 		var series = [];
 		series.push({
-				name: name,
+				name: 'Sim',
 				type: 'line',
 				turboThreshold: 0,
 				tooltip: { valueSuffix: ' ' + unit_of_measure },
@@ -296,11 +113,26 @@ function add_sync_plot(container_id,name,y_axis,data_list,unit_of_measure) {
 																				  return item.y >= 0;
 														 						})
 		});
+		if ( real_data_list.length > 0 ) {
+			series.push({
+					name: 'Real',
+					type: 'line',
+					turboThreshold: 0,
+					tooltip: { valueSuffix: ' ' + unit_of_measure },
+					data: real_data_list.map( function(item,index) {
+				                       return {
+				                           x: to_highchart_date(0, index),
+				                           y: item
+				                       };
+				                   }).filter( function(item) {
+																						return item.y >= 0;
+															 						})
+			})};
 
 		var new_container_id = container_id + '_sync_plot_' + name;
 		$("#" + container_id).append('<div id="' + new_container_id + '" style="min-width: 310px; min-height: 300px; height: 300px; margin: 0 auto"></div>');
 		
-		Highcharts.chart(new_container_id, {
+		mychart = {
             chart: {
                 marginLeft: 60, // Keep all charts left aligned
                 spacingTop: 40,
@@ -346,18 +178,42 @@ function add_sync_plot(container_id,name,y_axis,data_list,unit_of_measure) {
                     };
                 },
                 borderWidth: 0,
-                backgroundColor: 'none',
-                pointFormat: '{point.y}',
+                //backgroundColor: 'none',
+                pointFormat: '{series.name}: {point.y}<br/>',
                 headerFormat: '',
                 shadow: false,
-                style: {
-                    fontSize: '18px'
-                },
-                valueDecimals: 0
+                //style: {
+                //    fontSize: '18px'
+                //},
+                valueDecimals: 0,
+								/*formatter: function () {
+										var s = '';
+								    $.each(this.points, function () {
+												if (this.y) {
+								        s += this.series.name + ': ' +
+								            this.y + '   '
+												}});
+
+								    return s;
+								},*/
+								shared: true
             },
             series: series
-        });
-		my_override('#'+new_container_id);
+        };
+		// show legend if real data is available
+		if ( real_data_list.length > 0 ) {
+			mychart['legend'] = {
+								layout: 'horizontal',
+								align: 'left',
+								x: 50,
+								verticalAlign: 'top',
+								y: 20,
+								floating: true,
+								backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+						};
+		};
+		Highcharts.chart(new_container_id, mychart );
+		//my_override('#'+new_container_id);
 
 }
 
@@ -392,20 +248,25 @@ function loadJSON(){
 		$.getJSON("/o")
 				.done(function(comp_list) {
 						comp_list.forEach( function(item) {
-								$.getJSON("/call/" + item + "/get_history").done( function(result) {
+								$.when(
+										$.getJSON("/call/" + item + "/get_history"),
+										$.getJSON("/call/" + item + "/get_real_history")
+								).done(function(sim_result, real_result) {
 										var tabs = $("#tabs").tabs();
 										var ul = tabs.find("ul");
-										$('<li><a href="#' + item + '">' + result['result']['name'] + '</a></li>').appendTo(ul);
+										$('<li><a href="#' + item + '">' + sim_result[0]['result']['name'] + '</a></li>').appendTo(ul);
 										tabs.append('<div id="' + item + '"> </div>');
 										sort_tabs(tabs);
 									
 //										build_component_plot('#'+item, result['name'], result['result']['latencies'],result['result']['instances']);
 //										build_request_plot('#'+item, result['name'], result['result']['requests'],result['result']['pending'])
 
-										add_sync_plot(item, "Latency", "", result['result']['latencies'], "ms");
-										add_sync_plot(item, "Instances", "", result['result']['instances'], "");
-										add_sync_plot(item, "Requests", "", result['result']['requests'], "");
-										add_sync_plot(item, "Pending", "", result['result']['pending'], "");
+										add_sync_plot(item, "Latency", "", sim_result[0]['result']['latencies'], real_result[0]['result']['latencies'], "ms");
+										add_sync_plot(item, "Instances", "", sim_result[0]['result']['instances'], real_result[0]['result']['instances'], "");
+										add_sync_plot(item, "Requests", "", sim_result[0]['result']['requests'], [], "");
+										add_sync_plot(item, "Pending", "", sim_result[0]['result']['pending'], [], "");
+
+										my_override('#'+ item);
 										
 										
 										//printInConsole(data,"step "); 

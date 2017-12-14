@@ -173,6 +173,9 @@ interface LoadBalancer {
   Bool exe(String job_id);  // assign jobs
 	Unit kill(); // kill instance at the end of simulation
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info(Int latency, Int instances); // method used for visualization purposes
+	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
+	
 }
 
 class LoadBalancer(String name,
@@ -202,6 +205,8 @@ class LoadBalancer(String name,
 	List<Rat> latency_in_time = list[];
 	List<Int> requests_in_time = list[0];
 	List<Int> pending_in_time = list[];
+	List<Int> real_instances_in_time	= list[];
+	List<Rat> real_latency_in_time = list[];
 
 	Bool not_killed = True; // when simulation is finished
 
@@ -445,12 +450,27 @@ class LoadBalancer(String name,
 			reverse(pending_in_time) );
 	}
 
+	Unit add_real_info(Int latency, Int instances) {
+		real_latency_in_time = Cons(latency,real_latency_in_time);
+		real_instances_in_time = Cons(instances,real_instances_in_time);
+	}
+
+	Visualization get_real_history() {
+		return Visualization(
+			name,
+			real_latency_in_time,
+			real_instances_in_time,
+			Nil,
+			Nil );
+	}
 }
 
 
 interface Orchestrator {
 	Unit init();
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info(Int latency, Int instances); // method used for visualization purposes
+	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
 }
 
 class Orchestrator(List<Int> msg_list) implements Orchestrator {
@@ -470,6 +490,9 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	List<Int> pending_in_time = list[];
 	Rat sum_latency = 0;
 	Int count_latency = 0;
+	List<Int> real_instances_in_time	= list[];
+	List<Rat> real_latency_in_time = list[];
+
 
 	// Sequential flows of components
 	List<LoadBalancer> first_round = list[];
@@ -610,6 +633,20 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			reverse(pending_in_time) );
 	}
 
+	Unit add_real_info(Int latency, Int instances) {
+		real_latency_in_time = Cons(latency,real_latency_in_time);
+		real_instances_in_time = Cons(instances,real_instances_in_time);
+	}
+
+	Visualization get_real_history() {
+		return Visualization(
+			"__global__",
+			real_latency_in_time,
+			real_instances_in_time,
+			Nil,
+			Nil );
+	}
+
 	// return the times taken by sending jobs in sequence to a list of components
 	List<Int> do_round(List<LoadBalancer> lbs, String job_id) {
 		Int time = truncate(timeValue(now()));
@@ -668,9 +705,11 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		sum_latency = sum_latency + end_time - init_time;
 		count_latency = count_latency + 1;
 
-		String s = "job," + toString(init_time) + "," + toString(end_time) + "," + toString(end_time-init_time);
+		String s = "job," + toString(init_time*instance_base_speed()) +
+      "," + toString(end_time*instance_base_speed()) +
+			"," + toString((end_time-init_time)*instance_base_speed());
 		foreach (t in times) {
-			s = s + "," + toString(t);
+			s = s + "," + toString(t*instance_base_speed());
 		}
 		println(s);
 	}
@@ -692,7 +731,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	[HTTPName: "__global___"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
 	orchestrator!init();
 	
 }

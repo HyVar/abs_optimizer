@@ -17,27 +17,34 @@ switch_time_slot = 250
 #   java compiler
 
 names = [
-	'encoder',
-	'hyvarrec',
-	'decoder',
+  'encoder',
+  'hyvarrec',
+  'decoder',
   'resolution_spl',
-	'resolution_conf',
+  'resolution_conf',
   'delta_enc',
-	'variant_gen',
-	'code_gen',
-	'c_compiler',
+  'variant_gen',
+  'code_gen',
+  'c_compiler',
   'java_compiler']
 
 # average time of every component in ms
-avg_times = [10]*len(names)
-avg_times[names.index('hyvarrec')] = 1500
-avg_times[names.index('c_compiler')] = 33500
-avg_times[names.index('java_compiler')] = 2000
+avg_times = [500]*len(names)
+avg_times[names.index('encoder')] = 280
+avg_times[names.index('hyvarrec')] = 420
+avg_times[names.index('decoder')] = 310
+avg_times[names.index('resolution_spl')] = 210
+avg_times[names.index('resolution_conf')] = 300
+#avg_times[names.index('delta_enc')] = 280
+#avg_times[names.index('variant_gen')] = 280
+avg_times[names.index('code_gen')] = 6590
+avg_times[names.index('c_compiler')] = 7930
+avg_times[names.index('java_compiler')] = 11240
 
 # init time for instances in ms
-instance_init_times = [0]*len(names)
-instance_init_times[names.index('hyvarrec')] = (33 + 420)*1000
-instance_init_times[names.index('c_compiler')] = (32 + 349)*1000
+instance_init_times = [240*1000]*len(names)
+#instance_init_times[names.index('hyvarrec')] = (33 + 420)*1000
+#instance_init_times[names.index('c_compiler')] = (32 + 349)*1000
 
 # number of jobs submitted every time window of 15 minutes
 # traffic pattern is derived from the website data.gov.uk
@@ -68,18 +75,18 @@ initial_instances = [1] * len(names)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [1000*1000] * len(names)
+scaling_in = [ 5*x for x in avg_times]
 scaling_in[names.index('hyvarrec')] = 47*1000
-scaling_in[names.index('c_compiler')] = 224*1000
-scaling_in[names.index('java_compiler')] = 200*1000
+#scaling_in[names.index('c_compiler')] = 224*1000
+#scaling_in[names.index('java_compiler')] = 200*1000
 
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [999*1000] * len(names)
+scaling_out = [ 3*x for x in avg_times]
 scaling_out[names.index('hyvarrec')] = 4*1000
-scaling_out[names.index('c_compiler')] = 212*1000
-scaling_out[names.index('java_compiler')] = 150*1000
+#scaling_out[names.index('c_compiler')] = 212*1000
+#scaling_out[names.index('java_compiler')] = 150*1000
 
 scaling_out = [max(0,x) for x in scaling_out]
 
@@ -96,14 +103,17 @@ drop_requests = [0] * len(names)
 #scaling_down_ratio (RAT)
 # pending_jobs <  size(keys(instances)) * scaling_down_ratio
 # allows the scaling down
-scaling_down_ratio = ["1"] * len(names)
-scaling_down_ratio[names.index('hyvarrec')] = "25"
-scaling_down_ratio[names.index('c_compiler')] = "12/10"
+scaling_down_ratio = [unicode(int(float(60000)/x)*10) + "/10" for x in avg_times]
+#scaling_down_ratio[names.index('hyvarrec')] = "25"
+#scaling_down_ratio[names.index('code_gen')] = "15/10"
+#scaling_down_ratio[names.index('c_compiler')] = "15/10"
+#scaling_down_ratio[names.index('java_compiler')] = "15/10"
 
 #max_conn (0 means infinite) 
 max_conn = [0]*len(names)
 max_conn[names.index('hyvarrec')] = 30
-max_conn[names.index('c_compiler')] = 30
+max_conn[names.index('java_compiler')] = 5
+max_conn[names.index('c_compiler')] = 5
 
 # parallel_part
 parallel_cost = [0] * len(names)
@@ -238,19 +248,19 @@ max_val = instance_base_speed
 ls = [0]
 while jobs_arrival_times:
     if jobs_arrival_times[0] > max_val:
-			ls.append(0)
-			max_val += instance_base_speed
+      ls.append(0)
+      max_val += instance_base_speed
     else:
-			ls[-1] += 1
-			jobs_arrival_times.pop(0) 
+      ls[-1] += 1
+      jobs_arrival_times.pop(0) 
 
 ELEMENTS_PER_LIST = 10000
 counter = 0
 if ELEMENTS_PER_LIST < len(ls):
-		print "def List<Int> jobs_per_time_slot() = concatenate(list" + unicode(ls[0:ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter) + "());"
-		for i in range(1,len(ls)/ELEMENTS_PER_LIST):
-				print "def List<Int> jobs_aux" + unicode(counter) + "() = concatenate(list" + unicode(ls[i*ELEMENTS_PER_LIST:(i+1)*ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter+1) + "());"
-				counter += 1
-		print "def List<Int> jobs_aux" + unicode(counter)  + "() = list" + unicode(ls[(i+1)*ELEMENTS_PER_LIST:]) + ";"
+    print "def List<Int> jobs_per_time_slot() = concatenate(list" + unicode(ls[0:ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter) + "());"
+    for i in range(1,len(ls)/ELEMENTS_PER_LIST):
+        print "def List<Int> jobs_aux" + unicode(counter) + "() = concatenate(list" + unicode(ls[i*ELEMENTS_PER_LIST:(i+1)*ELEMENTS_PER_LIST]) + ",jobs_aux" + unicode(counter+1) + "());"
+        counter += 1
+    print "def List<Int> jobs_aux" + unicode(counter)  + "() = list" + unicode(ls[(i+1)*ELEMENTS_PER_LIST:]) + ";"
 else:
-		print "def List<Int> jobs_per_time_slot() = list" + unicode(ls) + ";"
+    print "def List<Int> jobs_per_time_slot() = list" + unicode(ls) + ";"

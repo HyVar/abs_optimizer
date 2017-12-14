@@ -1,4 +1,5 @@
 import math
+import click
 
 """
 process the logs of the hyvarsym simulator
