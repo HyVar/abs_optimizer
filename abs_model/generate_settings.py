@@ -112,8 +112,9 @@ scaling_down_ratio = [unicode(int(float(60000)/x)*10) + "/10" for x in avg_times
 #max_conn (0 means infinite) 
 max_conn = [0]*len(names)
 max_conn[names.index('hyvarrec')] = 30
-max_conn[names.index('java_compiler')] = 5
-max_conn[names.index('c_compiler')] = 5
+max_conn[names.index('code_gen')] = 9
+max_conn[names.index('java_compiler')] = 10
+max_conn[names.index('c_compiler')] = 10
 
 # parallel_part
 parallel_cost = [0] * len(names)
@@ -141,21 +142,21 @@ print ";\n"
 
 # cooling_off_time
 for i in range(len(cooling_off_time)):
-    print "def Int cooling_off_time_" + unicode(i) + "() = ",
+    print "def Int cooling_off_time_" + names[i] + "() = ",
     print cooling_off_time[i],
     print ";"
 
 print "def List<Int>  cooling_off_time_list() = list",
-print "[%s]" % ",".join([ "cooling_off_time_" + unicode(i) + "()" for i in range(len(cooling_off_time))]),
+print "[%s]" % ",".join([ "cooling_off_time_" + names[i] + "()" for i in range(len(cooling_off_time))]),
 print ";\n"
 
 for i in range(len(initial_instances)):
-    print "def Int initial_instances_" + unicode(i) + "() = ",
+    print "def Int initial_instances_" + names[i] + "() = ",
     print initial_instances[i],
     print ";"
 
 print "def List<Int> initial_instances_list() = list",
-print "[%s]" % ",".join([ "initial_instances_" + unicode(i) + "()" for i in range(len(initial_instances))]),
+print "[%s]" % ",".join([ "initial_instances_" + names[i] + "()" for i in range(len(initial_instances))]),
 print ";\n"
 
 # generate instance_cost_list def
@@ -167,40 +168,40 @@ print ";\n"
 # generate scaling in and out threshold
 
 for i in range(len(scaling_in)):
-    print "def Int scale_in_threshold_" + unicode(i) + "() = ",
+    print "def Int scale_in_threshold_" + names[i] + "() = ",
     print max(1,int(math.ceil(float(scaling_in[i])/instance_base_speed))),
     print ";"
 
 print "def List<Int>  scale_in_threshold_list() = list",
-print "[%s]" % ",".join([ "scale_in_threshold_" + unicode(i) + "()" for i in range(len(scaling_in))]),
+print "[%s]" % ",".join([ "scale_in_threshold_" + names[i] + "()" for i in range(len(scaling_in))]),
 print ";\n"
 
 for i in range(len(scaling_out)):
-    print "def Int scale_out_threshold_" + unicode(i) + "() = ",
+    print "def Int scale_out_threshold_" + names[i] + "() = ",
     print max(0,int(math.ceil(float(scaling_out[i])/instance_base_speed))),
     print ";"
 
 print "def List<Int>  scale_out_threshold_list() = list",
-print "[%s]" % ",".join([ "scale_out_threshold_" + unicode(i) + "()" for i in range(len(scaling_out))]),
+print "[%s]" % ",".join([ "scale_out_threshold_" + names[i] + "()" for i in range(len(scaling_out))]),
 print ";\n"
 
 # generate scaling in and out amounts
 for i in range(len(scale_in_amount_list)):
-    print "def Int scale_in_amount_" + unicode(i) + "() = ",
+    print "def Int scale_in_amount_" + names[i] + "() = ",
     print scale_in_amount_list[i],
     print ";"
 
 print "def List<Int> scale_in_amount_list() = list",
-print "[%s]" % ",".join([ "scale_in_amount_" + unicode(i) + "()" for i in range(len(scale_in_amount_list))]),
+print "[%s]" % ",".join([ "scale_in_amount_" + names[i] + "()" for i in range(len(scale_in_amount_list))]),
 print ";\n"
 
 for i in range(len(scale_out_amount_list)):
-    print "def Int scale_out_amount_" + unicode(i) + "() = ",
+    print "def Int scale_out_amount_" + names[i] + "() = ",
     print scale_out_amount_list[i],
     print ";"
 
 print "def List<Int> scale_out_amount_list() = list",
-print "[%s]" % ",".join([ "scale_out_amount_" + unicode(i) + "()" for i in range(len(scale_out_amount_list))]),
+print "[%s]" % ",".join([ "scale_out_amount_" + names[i] + "()" for i in range(len(scale_out_amount_list))]),
 print ";\n"
 
 # parallel_cost
