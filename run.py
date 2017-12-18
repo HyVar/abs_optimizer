@@ -213,8 +213,7 @@ def main(argv):
             quality = parse_abs_output.compute_quality(out)
             print 'Result of this algorithm run: SAT, 0, 0, ' + unicode(quality) + ', 0'
         except Exception as e:
-            print "Obtained excpetion: ",
-            print e
+            log.debug("Obtained exception " + unicode(e))
             print 'Result of this algorithm run: CRASHED, 0, 0, 0, 0, "Metric evaluation problem"'
     else:
         print 'Result of this algorithm run: CRASHED, 0, 0, 0, 0, "Program hanged"'

@@ -94,6 +94,10 @@ def main(argv):
     logging.debug("Simulation ended at " + unicode(end))
     logging.debug("scale_in decisions : " + unicode(plus))
     logging.debug("scale_out decisions : " + unicode(minus))
+
+    if not end:
+        logging.debug("Simulation non ended!!!")
+        return False
     val = { x:0 for x in components }
     with open(prefix + "_vm.csv", "w") as f:
         f.write("time," + ",".join(components) + "\n")
