@@ -63,14 +63,14 @@ def compute_quality(out):
     print "Average instances per second: " + unicode(summatory)
 
 
-    # interesting in latency < 300
-    # and average num of instances < 18
-    if average_latency < 300 and summatory < 18:
-        summatory = int(summatory * 100 * 300)
-        return average_latency + summatory
+    # interesting in latency < 300 seconds
+    # we assume that no more than 300 machines are used in average
+    if average_latency < 300000:
+        summatory = summatory
+        return summatory
     else:
         print "Violation of constraints"
-        return average_latency + 600000
+        return average_latency/1000
 
 
 # main procedure to test a sample given in input
