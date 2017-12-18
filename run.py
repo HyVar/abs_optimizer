@@ -192,7 +192,7 @@ def main(argv):
     out, err = proc.communicate()
     log.debug('Stdout of abs compilation')
     log.debug(out)
-    log.debug('Stdout of abs compilation')
+    log.debug('Stderr of abs compilation')
     log.debug(err)
 
     log.info('Running model compiled in directory ' + new_dir)
