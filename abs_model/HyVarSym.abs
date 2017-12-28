@@ -536,7 +536,6 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 				"encoder",
 				"hyvarrec",
 				"decoder",
-				"delta_enc",
 				"variant_gen",
 				"code_gen",
 				"c_compiler"]);
@@ -547,13 +546,12 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 					"encoder",
 					"hyvarrec",
 					"decoder",
-					"delta_enc",
 					"variant_gen",
 					"code_gen",
 					"java_compiler"]);
 		second_round_car = map((String i) => lookupUnsafe(components_map,i))(
 			list[
-				"delta_enc"]);
+				"variant_gen"]);
 
 		// instances initialized
 		foreach (c in components) {
