@@ -263,7 +263,10 @@ function loadJSON(){
 
 										add_sync_plot(item, "Latency", "", sim_result[0]['result']['latencies'], real_result[0]['result']['latencies'], "ms");
 										add_sync_plot(item, "Instances", "", sim_result[0]['result']['instances'], real_result[0]['result']['instances'], "");
-										add_sync_plot(item, "Requests", "", sim_result[0]['result']['requests'], [], "");
+										add_sync_plot(item, "Requests", "", sim_result[0]['result']['requests'], real_result[0]['result']['requests'], "");
+										//console.log(JSON.stringify(real_result[0]['result']['requests']));
+										//console.log(JSON.stringify(real_result[0]['result']['instances']));
+
 										add_sync_plot(item, "Pending", "", sim_result[0]['result']['pending'], [], "");
 
 										my_override('#'+ item);

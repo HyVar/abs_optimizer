@@ -173,8 +173,9 @@ interface LoadBalancer {
   Bool exe(String job_id);  // assign jobs
 	Unit kill(); // kill instance at the end of simulation
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
-	[HTTPCallable] Unit add_real_info(Int latency, Int instances); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info(Int latency, Int instances, Int requests); // method used for visualization purposes
 	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
+	[HTTPCallable] Unit reset_real_history(); // method used for visualization purposes
 	
 }
 
@@ -207,6 +208,7 @@ class LoadBalancer(String name,
 	List<Int> pending_in_time = list[];
 	List<Int> real_instances_in_time	= list[];
 	List<Rat> real_latency_in_time = list[];
+	List<Int> real_requests_in_time = list[];
 
 	Bool not_killed = True; // when simulation is finished
 
@@ -450,18 +452,25 @@ class LoadBalancer(String name,
 			reverse(pending_in_time) );
 	}
 
-	Unit add_real_info(Int latency, Int instances) {
+	Unit add_real_info(Int latency, Int instances, Int requests) {
 		real_latency_in_time = Cons(latency,real_latency_in_time);
 		real_instances_in_time = Cons(instances,real_instances_in_time);
+		real_requests_in_time = Cons(requests,real_requests_in_time);
 	}
 
 	Visualization get_real_history() {
 		return Visualization(
 			name,
-			real_latency_in_time,
-			real_instances_in_time,
-			Nil,
+			reverse(real_latency_in_time),
+			reverse(real_instances_in_time),
+			reverse(real_requests_in_time),
 			Nil );
+	}
+
+	Unit reset_real_history() {
+		real_latency_in_time = list[];
+		real_instances_in_time = list[];
+		real_requests_in_time = list[];	
 	}
 }
 
@@ -469,8 +478,9 @@ class LoadBalancer(String name,
 interface Orchestrator {
 	Unit init();
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
-	[HTTPCallable] Unit add_real_info(Int latency, Int instances); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info(Int latency, Int instances, Int requests); // method used for visualization purposes
 	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
+	[HTTPCallable] Unit reset_real_history(); // method used for visualization purposes
 }
 
 class Orchestrator(List<Int> msg_list) implements Orchestrator {
@@ -492,6 +502,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	Int count_latency = 0;
 	List<Int> real_instances_in_time	= list[];
 	List<Rat> real_latency_in_time = list[];
+	List<Int> real_requests_in_time = list[];
 
 
 	// Sequential flows of components
@@ -631,18 +642,25 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			reverse(pending_in_time) );
 	}
 
-	Unit add_real_info(Int latency, Int instances) {
+	Unit add_real_info(Int latency, Int instances, Int requests) {
 		real_latency_in_time = Cons(latency,real_latency_in_time);
 		real_instances_in_time = Cons(instances,real_instances_in_time);
+		real_requests_in_time = Cons(requests,real_requests_in_time);
 	}
 
 	Visualization get_real_history() {
 		return Visualization(
 			"__global__",
-			real_latency_in_time,
-			real_instances_in_time,
-			Nil,
+			reverse(real_latency_in_time),
+			reverse(real_instances_in_time),
+			reverse(real_requests_in_time),
 			Nil );
+	}
+
+	Unit reset_real_history() {
+		real_instances_in_time	= list[];
+		real_latency_in_time = list[];
+		real_requests_in_time = list[];		
 	}
 
 	// return the times taken by sending jobs in sequence to a list of components

@@ -29,15 +29,15 @@ names = [
 
 # average time of every component in ms
 avg_times = [500]*len(names)
-avg_times[names.index('encoder')] = 280
-avg_times[names.index('hyvarrec')] = 420
-avg_times[names.index('decoder')] = 310
-avg_times[names.index('resolution_spl')] = 210
-avg_times[names.index('resolution_conf')] = 300
+avg_times[names.index('encoder')] = 290
+avg_times[names.index('hyvarrec')] = 620
+avg_times[names.index('decoder')] = 340
+avg_times[names.index('resolution_spl')] = 200
+avg_times[names.index('resolution_conf')] = 340
 avg_times[names.index('variant_gen')] = 1090
-avg_times[names.index('code_gen')] = 6590
-avg_times[names.index('c_compiler')] = 7930
-avg_times[names.index('java_compiler')] = 11240
+avg_times[names.index('code_gen')] = 4521
+avg_times[names.index('c_compiler')] = 7950
+avg_times[names.index('java_compiler')] = 15020
 
 # init time for instances in ms
 instance_init_times = [240*1000]*len(names)
