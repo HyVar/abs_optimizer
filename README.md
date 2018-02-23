@@ -241,7 +241,8 @@ are exploited to speed up the simulation of the ABS model by using Erlang).
 
 ## WORK IN PROGREESS
 
-sudo docker run -d -p <PORT>:9001 --name abs_run jacopomauro/...
+sudo docker pull jacopomauro/abs_optimizer
+sudo docker run -d -p <PORT>:9001 --name abs_run jacopomauro/abs_optimizer
 sudo docker stop abs_run
 sudo docker rm abs_run
 
