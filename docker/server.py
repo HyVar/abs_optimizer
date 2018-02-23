@@ -124,16 +124,17 @@ class MyServer(BaseHTTPRequestHandler):
                     os.write(file_id,out)
                     os.close(file_id)
 
+                    logging.info('Parsing output')
                     cmd = ["timeout", str(LOG_PARSING_TIMEOUT), "python", python_prog[0], file_name]
                     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=temp_dir)
                     out, err = proc.communicate()
                     #logging.debug('Stdout of abs compilation: {}'.format(out))
-                    logging.debug('Stderr of abs compilation: {}'.format(err))
+                    logging.debug('Stderr of output parse execution: {}'.format(err))
                     if proc.returncode != 0:
                         raise ValueError(
                             "Parsing of the output of the ABS program ended up with return code {}".format(
                                 proc.returncode))
-
+                self._set_headers()
                 self.wfile.write(out)
             except ValueError as e:
                 self.send_response(400)

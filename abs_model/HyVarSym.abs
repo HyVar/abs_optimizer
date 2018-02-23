@@ -51,7 +51,7 @@ def List<A> sublist<A>(List<A> ls, Int start, Int end) =
 			sublist(tail(ls),start-1,end-1);
 
 def List<A> remove_first<A>(List<A> ls, Int n) = 
-	if (n < 1) then ls else remove_first(tail(ls),n-1);
+	if ((n < 1) || ls == Nil) then ls else remove_first(tail(ls),n-1);
 
 def List<Int> sum_lists(List<Int> xs, List<Int> ys) =
 	if (xs == Nil || ys == Nil)
@@ -595,7 +595,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 			c!kill();
 		}
 		
-		println("simulation_ended," + toString(timeValue(now())));
+		println("simulation_ended," + toString(timeValue(now())*instance_base_speed()));
 	}
 
 	// update the history (to be colled every checking_avg_time_interval)
@@ -747,7 +747,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),172000));
 	orchestrator!init();
 	
 }

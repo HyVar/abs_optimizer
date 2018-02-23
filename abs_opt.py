@@ -9,8 +9,10 @@ import click
 import json
 import sys
 import multiprocessing
-import itertools
-from functools import partial
+import tempfile
+import re
+import requests
+import time
 
 # Import ConfigSpace and different types of parameters
 from smac.configspace import ConfigurationSpace
@@ -23,16 +25,20 @@ from smac.tae.execute_func import ExecuteTAFuncDict
 from smac.scenario.scenario import Scenario
 from smac.facade.smac_facade import SMAC
 
-DEFAULT_SCENARIO = {"wallclock_limit": 60,#3600*24,
-                    "cutoff_time": 1800,
-                    "runcount-limit": 100,
-                    "run_obj": "quality",
+DEFAULT_SCENARIO = {"run_obj": "quality",
                     "deterministic": "true",
                     "shared_model": "true",
                     "initial_incumbent": "RANDOM",
                     "abort_on_first_run_crash": "True",
                     }
+ABS_FILES = []
+LOG_PARSER_PROGRAM = os.path.join(os.getcwd(),"abs_output_parser.py")
+SERVER_URL = "http://localhost"
+SERVER_PORT = "9001"
+SERVER_HOST = ""
 
+SLEEP_TIME_AFTER_ERROR = 60
+RESUBMISSION_ATTEMPTS = 2
 
 @click.group()
 @click.option('--log-level',
@@ -87,47 +93,111 @@ def build_config_space(data):
     # use_coef0 = InCondition(child=coef0, parent=kernel, values=["poly", "sigmoid"])
     # cs.add_conditions([use_degree, use_coef0])
 
+def update_ABS_program(file_name,param):
+    with open(file_name,"r") as f:
+        lines = f.readlines()
+    changed = False
+    for i in range(len(lines)):
+        m = re.match("def\s*(Int|Rat)\s*([a-zA-Z0-9_]*).*=.*",lines[i])
+        if m is not None:
+            if m.group(2) in param:
+                logging.debug("Changed parameter {} to {}".format(m.group(2), param[m.group(2)]))
+                lines[i] = "def {} {}() = {};\n".format(m.group(1), m.group(2), param[m.group(2)])
+                changed = True
+    if changed:
+        file_id, name = tempfile.mkstemp(suffix='.abs')
+        os.close(file_id)
+        with open(name,'w') as f:
+            f.write("".join(lines))
+        logging.debug("Program written into {}".format(name))
+        return name
+    return ""
+
 
 def evaluate_configuration(cfg):
     """
     cfg: Configuration containing the parameters.
     """
     cfg = {k: cfg[k] for k in cfg if cfg[k]}
-    print("Config {}".format(cfg))
+    logging.debug("Configuration: {}".format(cfg))
 
-    metric = 0
-    for k in cfg:
-        metric += pow(cfg[k],2)
+    try:
+        temp_files = []
+        abs_files = []
+        for i in ABS_FILES:
+            f = update_ABS_program(i, cfg)
+            if f:
+                temp_files.append(f)
+                abs_files.append(f)
+            else:
+                abs_files.append(i)
 
-    return -metric  # Minimize!
+        logging.debug("Updated {} files".format(len(temp_files)))
+
+        for i in range(RESUBMISSION_ATTEMPTS):
+            try:
+                req_files = []
+                for j in abs_files:
+                    req_files.append(['abs',open(j,'rb')])
+                req_files.append(["log_parser",open(LOG_PARSER_PROGRAM,'rb')])
+
+                logging.debug("Sending request to server, attempt {}".format(i+1))
+                response = requests.post("{}:{}/process".format(SERVER_URL,SERVER_PORT),
+                                         files=req_files,
+                                         headers={'host': SERVER_HOST} if SERVER_HOST else {})
+
+                logging.debug("Received answer with code {}".format(response.status_code))
+                # handle error in the answer
+                if response.status_code != requests.codes.ok:
+                    raise ValueError("Request failed with error text: {}".format(response.text))
+                # parse the answer
+                value = float(response.text)
+                logging.debug("Quality of the solution: {}".format(value))
+                return value  # Minimize!
+            except ValueError as e:
+                logging.error("Error {}".format(e))
+            except requests.exceptions.RequestException as e:
+                logging.critical("Connection request error {}".format(e))
+            except requests.exceptions.ConnectionError as e:
+                logging.error("Connection error {}".format(e))
+            if i < RESUBMISSION_ATTEMPTS - 1:
+                time.sleep(SLEEP_TIME_AFTER_ERROR)
+    finally:
+        for i in temp_files:
+            if os.path.exists(i):
+                os.remove(i)
 
 
 def worker(proc_num, json_data, scenario, queue):
 
-    # first process tried the default configuration
-    if proc_num == 0:
-        scenario["initial_incumbent"] = "DEFAULT"
-
-    logging.debug("Proc {}. Building the configuration space".format(proc_num))
     try:
-        scenario["cs"] = build_config_space(json_data)
-    except KeyError as e:
-        logging.warning("Proc {}. Error in building the scenario: {}".format(proc_num,e))
-        return
+        logging.debug("Worker {} started".format(proc_num))
+        incumbent = None
 
-    logging.debug("Proc {}. Building the SMAC object".format(proc_num))
-    smac = SMAC(scenario=Scenario(scenario),
-                rng=numpy.random.RandomState(proc_num),
-                tae_runner=evaluate_configuration,
-                run_id=proc_num)
+        # first process tried the default configuration
+        if proc_num == 0:
+            scenario["initial_incumbent"] = "DEFAULT"
+            logging.debug("First worker: start with testing default scenario.")
 
-    logging.debug("Proc {}. Starting the optimization".format(proc_num))
-    incumbent = smac.optimize()
+        logging.debug("Proc {}. Building the configuration space".format(proc_num))
+        try:
+            scenario["cs"] = build_config_space(json_data)
+        except KeyError as e:
+            logging.warning("Proc {}. Error in building the scenario: {}".format(proc_num,e))
+            return
 
-    logging.debug("Proc {}. Optimization has ended with incumbent {}".format(proc_num, incumbent))
-    queue.put(incumbent)
+        logging.debug("Proc {}. Building the SMAC object".format(proc_num))
+        smac = SMAC(scenario=Scenario(scenario),
+                    rng=numpy.random.RandomState(proc_num),
+                    tae_runner=evaluate_configuration,
+                    run_id=proc_num)
 
-    #inc_value = evaluate_configuration(incumbent)
+        logging.debug("Proc {}. Starting the optimization".format(proc_num))
+        incumbent = smac.optimize()
+
+        logging.debug("Proc {}. Optimization has ended with incumbent {}".format(proc_num, incumbent))
+    finally:
+        queue.put(incumbent)
 
 
 @click.command()
@@ -141,22 +211,61 @@ def worker(proc_num, json_data, scenario, queue):
               help='File where to store the results of the SMAC executions',
               type=click.Path(exists=False, file_okay=False, dir_okay=True, writable=True, readable=True,
                               resolve_path=True),
-              default=os.path.join(os.getcwd(),datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "_smac_output"),
-              show_default=True)
-@click.option('--abs_file',
+              #show_default=True
+              default=os.path.join(os.getcwd(),datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "_smac_output")
+              )
+@click.option('--abs-file','-a',
               multiple=True,
               type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True,
                               resolve_path=True),
-              help='ABS files to use',
-              default=[])
+              help='ABS files to use. First one contains the parameters to set.',
+              default=ABS_FILES)
+@click.option('--output-log-parser',
+              type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False, readable=True,
+                              resolve_path=True),
+              show_default=True,
+              help='Python program to parse the output of the ABS simulation.',
+              default=LOG_PARSER_PROGRAM)
 @click.option('--parallel-executions',
               help='How many parallel execution of SMAC are triggered',
               default=1,
               show_default=True)
+@click.option('--global-timeout',
+              help='How long in seconds the SMAC3 has to run',
+              default=3600*24,
+              show_default=True)
+@click.option('--simulation-timeout',
+              help='How long SMAC is allowed to wait for a single simulation',
+              default=3600,
+              show_default=True)
+@click.option('--global-simulation-limit',
+              help='Limit of the number of simulation that SMAC is allowed to do',
+              default=100,
+              show_default=True)
+@click.option('--server-url',
+              help='Server URL address',
+              show_default=True,
+              default=SERVER_URL)
+@click.option('--server-port',
+              help='Server IP port',
+              show_default=True,
+              default=SERVER_PORT)
+@click.option('--server-host',
+              help='Custom header host if needed',
+              show_default=True,
+              default=SERVER_HOST)
+
 def run(param_file,
         abs_file,
+        output_log_parser,
         parallel_executions,
-        output_dir
+        output_dir,
+        global_timeout,
+        simulation_timeout,
+        global_simulation_limit,
+        server_url,
+        server_port,
+        server_host,
         ):
     """
     Run SMAC on the given scenario
@@ -169,6 +278,18 @@ def run(param_file,
     scenario = DEFAULT_SCENARIO
     scenario["input_psmac_dirs"] = os.path.join(output_dir, "*")
     scenario["output_dir"] = output_dir
+    scenario["wallclock_limit"] = global_timeout
+    scenario["cutoff_time"] = simulation_timeout
+    scenario["runcount-limit"] = global_simulation_limit
+
+    # needed to call the evaluation function without passing other parameters
+    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST
+
+    ABS_FILES = abs_file
+    LOG_PARSER_PROGRAM = output_log_parser
+    SERVER_URL = server_url
+    SERVER_PORT = server_port
+    SERVER_HOST = server_host
 
     logging.info("Parsing JSON file")
     try:
@@ -176,10 +297,6 @@ def run(param_file,
     except ValueError as e:
         logging.critical("Json file {} is not a valid JSON. Error: {}".format(param_file, e))
         sys.exit(1)
-
-
-
-    #worker_plus = partial(worker, json_data=json_data, scenario=scenario)
 
     procs = []
     queue = multiprocessing.Queue()
