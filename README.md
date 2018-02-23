@@ -248,8 +248,7 @@ sudo docker rm abs_run
 
 sudo docker run --net="host" -d --name abs_run_main jacopomauro/abs_optimizer:main /bin/bash -c "while true; do sleep 60; done"
 sudo docker exec -i -t abs_run_main /bin/bash
-sudo docker stop abs_run_main
-sudo docker rm abs_run_main
+sudo docker stop abs_run_main && sudo docker rm abs_run_main
 
 Change abs_optput_parser.py
 
