@@ -236,6 +236,14 @@ resources of a node and therefore `PAR_PROC` should be less than the number of
 nodes of the cluster (note that every node can have more than one CPU that
 are exploited to speed up the simulation of the ABS model by using Erlang).
 
+## ABS Docker image to execute a simulation
+
+sudo docker run -d -p <PORT>:9001 --name abs_run jacopomauro/...
+sudo docker stop abs_run
+sudo docker rm abs_run
+
+
+
 ## Limitations
 
 - Categorical paramters are not yet supported

@@ -67,20 +67,25 @@ class MyServer(BaseHTTPRequestHandler):
                 extra_files = []
 
                 for i in postvars:
-                    if i.startswith('abs'):
-                        logging.debug("Found abs input file")
-                        file_id, name = tempfile.mkstemp(suffix='.abs')
-                        os.write(file_id, b''.join(postvars[i]))
-                        os.close(file_id)
-                        abs_prog.append(name)
-                    elif i.startswith('log_parser'):
+                    if i == 'abs':
+                        logging.debug("Found {} abs input files".format(len(postvars[i])))
+                        for j in postvars[i]:
+                            file_id, name = tempfile.mkstemp(suffix='.abs')
+                            os.close(file_id)
+                            with open(name, "w") as f:
+                                f.write(j.decode("utf-8"))
+                            abs_prog.append(name)
+                    elif i == 'log_parser':
+                        if len(postvars[i]) != 1:
+                            raise ValueError("Zero or more than one log_parser programs sent")
                         logging.debug("Found log_parser input file")
                         file_id, name = tempfile.mkstemp(suffix='.py')
-                        os.write(file_id, b''.join(postvars[i]))
                         os.close(file_id)
+                        with open(name,"w") as f:
+                            f.write(postvars[i][0].decode("utf-8"))
                         python_prog.append(name)
                     else:
-                        if len(postvars[i]) != 1:
+                        if len(postvars[i]) > 1:
                             raise ValueError("Parameter {} badly formatted".format(i))
                         if postvars[i][0] == "":
                             logging.debug("Found flag {}".format(i))
@@ -114,12 +119,12 @@ class MyServer(BaseHTTPRequestHandler):
 
                 if python_prog:
                     # save output in a file
-                    file_id, name = tempfile.mkstemp(text=True)
+                    file_id, file_name = tempfile.mkstemp(text=True)
                     extra_files.append(name)
                     os.write(file_id,out)
                     os.close(file_id)
 
-                    cmd = [ "timeout", str(LOG_PARSING_TIMEOUT), "python", python_prog[1], name]
+                    cmd = ["timeout", str(LOG_PARSING_TIMEOUT), "python", python_prog[0], file_name]
                     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=temp_dir)
                     out, err = proc.communicate()
                     #logging.debug('Stdout of abs compilation: {}'.format(out))
