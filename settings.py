@@ -4,12 +4,12 @@
 PARAMETERS_FILE = "./params.pcs"
 
 # path of the model containing the definition of the parameters to omptimize
-MODEL = "./abs_model/Settings.abs"
+MODEL = "./examples/hyvar/Settings.abs"
 
 # list of the path of the additional abs programs needed to compile the
 # abs program
 # relative path can be used assuming the current directory is abs_optimizer
-ADDITIONAL_ABS_FILES = [ "abs_model/HyVarSym.abs" ]
+ADDITIONAL_ABS_FILES = [ "/examples/hyvar/HyVarSym.abs" ]
 
 # clock limit to use for the erlang simulation (parameter -l)
 # -1 if the -l option does not need to be used
