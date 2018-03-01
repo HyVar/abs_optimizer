@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: http-myapp
+  name: http-myapp
+  namespace: myapp-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: http-myapp
+  template:
+    metadata:
+      labels:
+        run: http-myapp
+    spec:
+      containers:
+        - name: http-myapp
+          image: jacopomauro/abs_optimizer:latest
+          ports:
+          - containerPort: 9001
+					livenessProbe:
+						httpGet:
+						  path: /health
+						  port: 9001
+						initialDelaySeconds: 120
+						periodSeconds: 60
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: run
+                  operator: In
+                  values:
+                  - http-myapp
+                  - haproxy-ingress
+            topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: http-myapp
+  name: http-myapp
+  namespace: myapp-namespace
+spec:
+  ports:
+    - name: port-1
+      port: 9001
+      protocol: TCP
+      targetPort: 9001
+  selector:
+    run: http-myapp
