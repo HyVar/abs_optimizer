@@ -6,6 +6,8 @@ Examples for sending requests:
     curl -F "abs=@<FILE>" "abs1=@<FILE>" ... http://localhost:9001/process
 """
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+
 import urllib.parse as urlparse
 import logging
 import cgi
@@ -155,12 +157,15 @@ class MyServer(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("Operation not allowed".encode('utf-8'))
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
+    pass
 
-def run(server_class=HTTPServer, handler_class=MyServer, port=9001):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    logging.info('Starting httpd...')
-    httpd.serve_forever()
+def run(port=9001):
+    server_address = ('localhost', port)
+    server = ThreadedHTTPServer(server_address, MyServer)
+    logging.info('Starting httpd server...')
+    server.serve_forever()
 
 
 @click.command()

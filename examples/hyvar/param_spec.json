@@ -1,51 +1,44 @@
 {  
-	"constraints": [
-		{
-			"param1": "scale_in_threshold_hyvarrec",
-			"op": "<",
-			"param2": "scale_out_threshold_hyvarrec"
-		}
-	],		  
 	"parameters":{  
-      "scale_out_threshold_hyvarrec":{  
+      "scale_out_threshold_diff_hyvarrec":{  
          "type":"integer",
          "values":[  
-            3,
-            300
+            1,
+            100
          ],
-         "default":4
+         "default":1
       },
-      "scale_out_threshold_code_gen":{  
+      "scale_out_threshold_diff_code_gen":{  
          "type":"integer",
          "values":[  
-            8,
-            300
+            1,
+            100
          ],
-         "default":14
+         "default":1
       },
-      "scale_out_threshold_c_compiler":{  
+      "scale_out_threshold_diff_c_compiler":{  
          "type":"integer",
          "values":[  
-            9,
-            300
+            1,
+            100
          ],
-         "default":16
+         "default":1
       },
-      "scale_out_threshold_java_compiler":{  
+      "scale_out_threshold_diff_java_compiler":{  
          "type":"integer",
          "values":[  
-            13,
-            300
+            1,
+            100
          ],
-         "default":24
+         "default":1
       },
-      "scale_out_threshold_variant_gen":{  
+      "scale_out_threshold_diff_variant_gen":{  
          "type":"integer",
          "values":[  
-            3,
-            300
+            1,
+            100
          ],
-         "default":5
+         "default":1
       },
       "scale_in_threshold_hyvarrec":{  
          "type":"integer",

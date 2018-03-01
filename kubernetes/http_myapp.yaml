@@ -20,13 +20,12 @@ spec:
           image: jacopomauro/abs_optimizer:latest
           ports:
           - containerPort: 9001
-					livenessProbe:
-						httpGet:
-						  path: /health
-						  port: 9001
-						initialDelaySeconds: 120
-						periodSeconds: 60
-
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9001
+            initialDelaySeconds: 120
+            periodSeconds: 60
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
