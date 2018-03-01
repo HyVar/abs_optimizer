@@ -161,10 +161,9 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
     pass
 
-def run(port=9001):
-    server_address = ('localhost', port)
-    server = ThreadedHTTPServer(server_address, MyServer)
-    logging.info('Starting httpd server...')
+def run(port):
+    server = ThreadedHTTPServer(('', port), MyServer)
+    logging.info('Starting httpd server on port {}'.format(port))
     server.serve_forever()
 
 
@@ -179,7 +178,7 @@ def run(port=9001):
 def main(port,log_level):
     logging.basicConfig(format="[%(asctime)s][%(levelname)s][%(name)s]%(message)s",
                         level=log_level)
-    run(port=port)
+    run(port)
 
 
 if __name__ == "__main__":
