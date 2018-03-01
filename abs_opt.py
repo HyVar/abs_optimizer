@@ -18,7 +18,6 @@ import time
 from smac.configspace import ConfigurationSpace
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, \
     OrdinalHyperparameter, UniformIntegerHyperparameter
-from ConfigSpace.conditions import InCondition
 
 # Import SMAC-utilities
 from smac.tae.execute_func import ExecuteTAFuncDict
@@ -52,26 +51,30 @@ def cli(log_level):
                         level=log_level)
 
 
+
+
 ################################
 # Utility functions
 ################################
-
 def build_config_space(data):
     # Build Configuration Space which defines all parameters and their ranges
     cs = ConfigurationSpace()
+
+    params = {}
 
     for i in data["parameters"]:
         obj = data["parameters"][i]
         if obj["type"] == "integer":
             if min(obj["values"]) < max(obj["values"]):
-                cs.add_hyperparameter(UniformIntegerHyperparameter(
-                    i, min(obj["values"]), max(obj["values"]), default_value=obj["default"]))
+                params[i] = UniformIntegerHyperparameter(
+                    i, min(obj["values"]), max(obj["values"]), default_value=obj["default"])
+                cs.add_hyperparameter(params[i])
             else:
                 logging.warning("Parameter {} can take only one value. It will be ignored".format(i))
         elif obj["type"] == "ordinal":
             if len(obj["values"]) > 1:
-                cs.add_hyperparameter(OrdinalHyperparameter(
-                    i, obj["values"], default_value=obj["default"]))
+                params[i] = OrdinalHyperparameter(i, obj["values"], default_value=obj["default"])
+                cs.add_hyperparameter(params[i])
             else:
                 logging.warning("Parameter {} can take only one value. It will be ignored".format(i))
         else:
@@ -79,19 +82,6 @@ def build_config_space(data):
             sys.exit(1)
     return cs
 
-    # kernel = CategoricalHyperparameter("kernel", ["linear", "rbf", "poly", "sigmoid"], default_value="poly")
-    # cs.add_hyperparameter(kernel)
-    # C = UniformFloatHyperparameter("C", 0.001, 1000.0, default_value=1.0)
-    # shrinking = CategoricalHyperparameter("shrinking", ["true", "false"], default_value="true")
-    # cs.add_hyperparameters([C, shrinking])
-    #
-    # # Others are kernel-specific, so we can add conditions to limit the searchspace
-    # degree = UniformIntegerHyperparameter("degree", 1, 5, default_value=3)  # Only used by kernel poly
-    # coef0 = UniformFloatHyperparameter("coef0", 0.0, 10.0, default_value=0.0)  # poly, sigmoid
-    # cs.add_hyperparameters([degree, coef0])
-    # use_degree = InCondition(child=degree, parent=kernel, values=["poly"])
-    # use_coef0 = InCondition(child=coef0, parent=kernel, values=["poly", "sigmoid"])
-    # cs.add_conditions([use_degree, use_coef0])
 
 def update_ABS_program(file_name,param):
     with open(file_name,"r") as f:
@@ -120,6 +110,9 @@ def evaluate_configuration(cfg):
     """
     cfg = {k: cfg[k] for k in cfg if cfg[k]}
     logging.debug("Configuration: {}".format(cfg))
+
+    # test evaluation function
+    #return -sum(cfg.values())
 
     try:
         temp_files = []

@@ -47,14 +47,14 @@ def evaluate(lines):
     vms = {}
     for i in scale_in:
         if i in vms:
-            vms[i] += 1
+            vms[i] += -1
         else:
-            vms[i] = 1
+            vms[i] = -1
     for i in scale_out:
         if i in vms:
             vms[i] += 1
         else:
-            vms[i] = -1
+            vms[i] = 1
 
     counter = 0
     area = 0

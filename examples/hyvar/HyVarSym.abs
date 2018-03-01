@@ -260,11 +260,11 @@ class LoadBalancer(String name,
 			DC dc = new DeploymentComponent(name + toString(i), map[Pair(Speed, instance_speed)]);
 			[DC: dc] Instance inst = new Instance();
 			inst!decrease_speed_at_random();
-			println("scale_in," + toString(timeValue(now())) + "," + name); 
+			println("scale_out," + toString(timeValue(now())) + "," + name); 
 			instances = put(instances,inst,0);
 			i = i+1;
 		}
-		//if (scale_in_amount != 0) { performance improvement when visualization is not needed
+		//if (scale_out_amount != 0) { performance improvement when visualization is not needed
 			// do not scale after the first time interval (answers need to be collected)
 			await duration(checking_avg_time_interval(),checking_avg_time_interval());
 			await duration(checking_avg_time_interval(),checking_avg_time_interval());
@@ -325,7 +325,7 @@ class LoadBalancer(String name,
 		log_debug(name + " solved job " + job_id);
 		
 		// save job in history
-		//if (scale_in_amount != 0) {
+		//if (scale_out_amount != 0) {
 			history = Cons(timeValue(now()) - init_time,history);
 		//}
 		log_debug(name + " processed job " + job_id);
@@ -335,18 +335,6 @@ class LoadBalancer(String name,
 	}
 
 	Unit scale_in() {
-		DC dc = new DeploymentComponent("", map[Pair(Speed, instance_speed)]);
-		String time = toString(timeValue(now())); 
-		println("scale_in," + time + "," + name);
-		await duration(instance_init_time,instance_init_time);
-		if (not_killed) {
-			[DC: dc] Instance inst = new Instance();
-			inst!decrease_speed_at_random();
-			instances = put(instances,inst,0);
-		}
-	}
-
-	Unit scale_out() {
 		//remove the first instance of the pool if it is not the last one.
 		Fut<Bool> f;
 		if (length(values(instances)) > 1) {
@@ -357,7 +345,19 @@ class LoadBalancer(String name,
 			Fut<DC> fut_dc = inst!getDC();
 			DC dc = fut_dc.get;
 			dc!shutdown();
-			println("scale_out," + toString(timeValue(now())) + "," + name);
+			println("scale_in," + toString(timeValue(now())) + "," + name);
+		}
+	}
+
+	Unit scale_out() {
+		DC dc = new DeploymentComponent("", map[Pair(Speed, instance_speed)]);
+		String time = toString(timeValue(now())); 
+		println("scale_out," + time + "," + name);
+		await duration(instance_init_time,instance_init_time);
+		if (not_killed) {
+			[DC: dc] Instance inst = new Instance();
+			inst!decrease_speed_at_random();
+			instances = put(instances,inst,0);
 		}
 	}
 
@@ -400,26 +400,26 @@ class LoadBalancer(String name,
 				// if you have no jobs solved in the last time window
 				if (pending_jobs <  size(keys(instances)) * scaling_down_ratio) { 
 					log_debug(name + ": scale out decision taken. No jobs solved in previous time window");
-					foreach (i in range(scale_out_amount)) {
-						this!scale_out();
+					foreach (i in range(scale_in_amount)) {
+						this!scale_in();
 						has_scaled = True;
 					}
 				} else {
 					log_debug(name + ": scale in decision taken. No jobs solved in previous time window");
-					foreach (i in range(scale_in_amount)) {
-						this!scale_in();					}
+					foreach (i in range(scale_out_amount)) {
+						this!scale_out();					}
 						has_scaled = True;
 				}
-		} else if (average_latency >= scale_in_threshold) {
+		} else if (average_latency >= scale_out_threshold) {
 				log_debug(name + ": scale in decision taken. Average latency " + toString(average_latency));
-				foreach (i in range(scale_in_amount)) {
-					this!scale_in();
-					has_scaled = True;
-				}
-		} else if ((average_latency <= scale_out_threshold) && (pending_jobs <  size(keys(instances)) * scaling_down_ratio)) {
-				log_debug(name + ": scale out decision taken. Average latency " + toString(average_latency));
 				foreach (i in range(scale_out_amount)) {
 					this!scale_out();
+					has_scaled = True;
+				}
+		} else if ((average_latency <= scale_in_threshold) && (pending_jobs <  size(keys(instances)) * scaling_down_ratio)) {
+				log_debug(name + ": scale out decision taken. Average latency " + toString(average_latency));
+				foreach (i in range(scale_in_amount)) {
+					this!scale_in();
 					has_scaled = True;
 				}
 		}
@@ -523,7 +523,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 					nth(instance_speed_list(),i),  // speed of an instance
 					nth(scale_in_threshold_list(),i), // average response time to scale in
 					nth(scale_in_amount_list(),i), // amount of instances added when scale in
-					nth(scale_out_threshold_list(),i), // average response time to scale out
+					nth(scale_out_threshold_diff_list(),i)+nth(scale_in_threshold_list(),i), // average response time to scale out
 					nth(scale_out_amount_list(),i), // amount of instances removed when scale out
 					nth(initial_instances_list(),i), // number of initial instances
 					nth(scaling_down_ratio_list(),i), // limit to disallow the scaling down
@@ -740,7 +740,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,initial_instances_list," + toString(initial_instances_list()));
 	println("aux,instance_cost_list," + toString(instance_cost_list()));
 	println("aux,scale_in_threshold_list," + toString(scale_in_threshold_list()));
-	println("aux,scale_out_threshold_list," + toString(scale_out_threshold_list()));
+	println("aux,scale_out_threshold_diff_list," + toString(scale_out_threshold_diff_list()));
 	println("aux,scale_in_amount_list," + toString(scale_in_amount_list()));
 	println("aux,scale_out_amount_list," + toString(scale_out_amount_list()));
 	println("aux,instance_speed_list," + toString(instance_speed_list()));

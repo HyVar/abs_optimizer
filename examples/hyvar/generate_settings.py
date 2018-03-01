@@ -73,7 +73,7 @@ initial_instances = [1] * len(names)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
-scaling_in = [ 5*x for x in avg_times]
+scaling_in = [ 3*x for x in avg_times]
 #scaling_in[names.index('hyvarrec')] = 47*1000
 #scaling_in[names.index('c_compiler')] = 224*1000
 #scaling_in[names.index('java_compiler')] = 200*1000
@@ -81,12 +81,7 @@ scaling_in = [ 5*x for x in avg_times]
 scaling_in = [max(x,1000.0) for x in scaling_in]
 
 # x scale out factor in ms
-scaling_out = [ 3*x for x in avg_times]
-#scaling_out[names.index('hyvarrec')] = 4*1000
-#scaling_out[names.index('c_compiler')] = 212*1000
-#scaling_out[names.index('java_compiler')] = 150*1000
-
-scaling_out = [max(0,x) for x in scaling_out]
+scaling_out_diff = [ x for x in avg_times]
 
 # amount of instance to increase every scale in
 scale_in_amount_list = [1] * len(names)
@@ -122,7 +117,7 @@ print "module Settings;"
 print "export *;\n" 
 
 print "def Int instance_base_speed() = ",
-print instance_base_speed
+print instance_base_speed,
 print ";\n"
 
 # switch_time_slot
@@ -175,13 +170,13 @@ print "def List<Int>  scale_in_threshold_list() = list",
 print "[%s]" % ",".join([ "scale_in_threshold_" + names[i] + "()" for i in range(len(scaling_in))]),
 print ";\n"
 
-for i in range(len(scaling_out)):
-    print "def Int scale_out_threshold_" + names[i] + "() = ",
-    print max(0,int(math.ceil(float(scaling_out[i])/instance_base_speed))),
+for i in range(len(scaling_out_diff)):
+    print "def Int scale_out_threshold_diff_" + names[i] + "() = ",
+    print max(0,int(math.ceil(float(scaling_out_diff[i])/instance_base_speed))),
     print ";"
 
-print "def List<Int>  scale_out_threshold_list() = list",
-print "[%s]" % ",".join([ "scale_out_threshold_" + names[i] + "()" for i in range(len(scaling_out))]),
+print "def List<Int>  scale_out_threshold_diff_list() = list",
+print "[%s]" % ",".join([ "scale_out_threshold_diff_" + names[i] + "()" for i in range(len(scaling_out_diff))]),
 print ";\n"
 
 # generate scaling in and out amounts

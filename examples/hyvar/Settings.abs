@@ -1,8 +1,7 @@
 module Settings;
 export *;
 
-def Int instance_base_speed() =  500
-;
+def Int instance_base_speed() =  500 ;
 
 def Int switch_time_slot() =  250 ;
 
@@ -34,27 +33,27 @@ def List<Int> initial_instances_list() = list [initial_instances_encoder(),initi
 
 def List<Int>  instance_cost_list() = list [290, 620, 340, 200, 340, 1090, 4521, 7950, 15020] ;
 
-def Int scale_in_threshold_encoder() =  3 ;
-def Int scale_in_threshold_hyvarrec() =  7 ;
-def Int scale_in_threshold_decoder() =  4 ;
+def Int scale_in_threshold_encoder() =  2 ;
+def Int scale_in_threshold_hyvarrec() =  4 ;
+def Int scale_in_threshold_decoder() =  3 ;
 def Int scale_in_threshold_resolution_spl() =  2 ;
-def Int scale_in_threshold_resolution_conf() =  4 ;
-def Int scale_in_threshold_variant_gen() =  11 ;
-def Int scale_in_threshold_code_gen() =  46 ;
-def Int scale_in_threshold_c_compiler() =  80 ;
-def Int scale_in_threshold_java_compiler() =  151 ;
+def Int scale_in_threshold_resolution_conf() =  3 ;
+def Int scale_in_threshold_variant_gen() =  7 ;
+def Int scale_in_threshold_code_gen() =  28 ;
+def Int scale_in_threshold_c_compiler() =  48 ;
+def Int scale_in_threshold_java_compiler() =  91 ;
 def List<Int>  scale_in_threshold_list() = list [scale_in_threshold_encoder(),scale_in_threshold_hyvarrec(),scale_in_threshold_decoder(),scale_in_threshold_resolution_spl(),scale_in_threshold_resolution_conf(),scale_in_threshold_variant_gen(),scale_in_threshold_code_gen(),scale_in_threshold_c_compiler(),scale_in_threshold_java_compiler()] ;
 
-def Int scale_out_threshold_encoder() =  2 ;
-def Int scale_out_threshold_hyvarrec() =  4 ;
-def Int scale_out_threshold_decoder() =  3 ;
-def Int scale_out_threshold_resolution_spl() =  2 ;
-def Int scale_out_threshold_resolution_conf() =  3 ;
-def Int scale_out_threshold_variant_gen() =  7 ;
-def Int scale_out_threshold_code_gen() =  28 ;
-def Int scale_out_threshold_c_compiler() =  48 ;
-def Int scale_out_threshold_java_compiler() =  91 ;
-def List<Int>  scale_out_threshold_list() = list [scale_out_threshold_encoder(),scale_out_threshold_hyvarrec(),scale_out_threshold_decoder(),scale_out_threshold_resolution_spl(),scale_out_threshold_resolution_conf(),scale_out_threshold_variant_gen(),scale_out_threshold_code_gen(),scale_out_threshold_c_compiler(),scale_out_threshold_java_compiler()] ;
+def Int scale_out_threshold_diff_encoder() =  1 ;
+def Int scale_out_threshold_diff_hyvarrec() =  2 ;
+def Int scale_out_threshold_diff_decoder() =  1 ;
+def Int scale_out_threshold_diff_resolution_spl() =  1 ;
+def Int scale_out_threshold_diff_resolution_conf() =  1 ;
+def Int scale_out_threshold_diff_variant_gen() =  3 ;
+def Int scale_out_threshold_diff_code_gen() =  10 ;
+def Int scale_out_threshold_diff_c_compiler() =  16 ;
+def Int scale_out_threshold_diff_java_compiler() =  31 ;
+def List<Int>  scale_out_threshold_diff_list() = list [scale_out_threshold_diff_encoder(),scale_out_threshold_diff_hyvarrec(),scale_out_threshold_diff_decoder(),scale_out_threshold_diff_resolution_spl(),scale_out_threshold_diff_resolution_conf(),scale_out_threshold_diff_variant_gen(),scale_out_threshold_diff_code_gen(),scale_out_threshold_diff_c_compiler(),scale_out_threshold_diff_java_compiler()] ;
 
 def Int scale_in_amount_encoder() =  1 ;
 def Int scale_in_amount_hyvarrec() =  1 ;
