@@ -114,7 +114,7 @@ class MyServer(BaseHTTPRequestHandler):
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=temp_dir)
                 out, err = proc.communicate()
                 #logging.debug('Stdout of abs compilation: {}'.format(out))
-                logging.debug('Stderr of abs compilation: {}'.format(err))
+                logging.debug('Stderr of abs execution: {}'.format(err))
                 if proc.returncode != 0:
                     raise ValueError(
                         "Execution of ABS program ended up with return code {}".format(proc.returncode))

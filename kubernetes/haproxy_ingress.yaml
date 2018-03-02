@@ -25,7 +25,7 @@ data:
   timeout-tunnel: "2h"
 kind: ConfigMap
 metadata:
-  name: haproxy-configmap
+  name: haproxy-myapp-configmap
   namespace: myapp-namespace
 ---
 apiVersion: extensions/v1beta1
@@ -51,7 +51,7 @@ spec:
         args:
         - --default-backend-service=$(POD_NAMESPACE)/ingress-default-backend
         - --default-ssl-certificate=$(POD_NAMESPACE)/tls-secret
-        - --configmap=$(POD_NAMESPACE)/haproxy-configmap
+        - --configmap=$(POD_NAMESPACE)/haproxy-myapp-configmap
         ports:
         - name: http
           containerPort: 80
