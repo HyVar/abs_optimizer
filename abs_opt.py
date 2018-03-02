@@ -31,7 +31,7 @@ DEFAULT_SCENARIO = {"run_obj": "quality",
                     "abort_on_first_run_crash": "True",
                     }
 ABS_FILES = []
-LOG_PARSER_PROGRAM = os.path.join(os.getcwd(),"abs_output_parser.py")
+LOG_PARSER_PROGRAM = os.path.join(os.getcwd(),"solution_quality.py")
 SERVER_URL = "http://localhost"
 SERVER_PORT = "9001"
 SERVER_HOST = ""
@@ -108,13 +108,15 @@ def evaluate_configuration(cfg):
     """
     cfg: Configuration containing the parameters.
     """
+    pid = os.getpid()
     cfg = {k: cfg[k] for k in cfg if cfg[k]}
-    logging.debug("Configuration: {}".format(cfg))
+    logging.debug("Pid {}, Configuration: {}".format(pid, cfg))
 
     # test evaluation function
     #return -sum(cfg.values())
 
     try:
+
         temp_files = []
         abs_files = []
         for i in ABS_FILES:
@@ -125,7 +127,7 @@ def evaluate_configuration(cfg):
             else:
                 abs_files.append(i)
 
-        logging.debug("Updated {} files".format(len(temp_files)))
+        logging.debug("Pid {}, Updated {} files".format(pid, len(temp_files)))
 
         for i in range(RESUBMISSION_ATTEMPTS):
             try:
@@ -134,25 +136,34 @@ def evaluate_configuration(cfg):
                     req_files.append(['abs',open(j,'rb')])
                 req_files.append(["log_parser",open(LOG_PARSER_PROGRAM,'rb')])
 
-                logging.debug("Sending request to server, attempt {}".format(i+1))
+                # to use only one processor for the erlang simulation
+                # req_files.append(["-s","1"])
+
+                start_time = datetime.datetime.now()
+                logging.debug("Pid {}, Sending request to server, attempt {}".format(
+                    pid,i+1))
                 response = requests.post("{}:{}/process".format(SERVER_URL,SERVER_PORT),
                                          files=req_files,
                                          headers={'host': SERVER_HOST} if SERVER_HOST else {})
 
-                logging.debug("Received answer with code {}".format(response.status_code))
+                delta = datetime.datetime.now() - start_time
+                logging.debug("Pid {}, Received answer with code {}. Time {}".format(
+                    pid, response.status_code, delta.total_seconds()))
                 # handle error in the answer
                 if response.status_code != requests.codes.ok:
-                    raise ValueError("Request failed with error text: {}".format(response.text))
+                    raise ValueError("Pid {}, Request failed with error text: {}. Time {}".format(
+                        pid, response.text, delta.total_seconds()))
                 # parse the answer
                 value = float(response.text)
-                logging.debug("Quality of the solution: {}".format(value))
+                logging.debug("Pid {}, Quality of the solution: {}".format(
+                    pid, value))
                 return value  # Minimize!
             except ValueError as e:
-                logging.error("Error {}".format(e))
+                logging.error("Pid {}, Error {}".format(pid,e))
             except requests.exceptions.RequestException as e:
-                logging.critical("Connection request error {}".format(e))
+                logging.critical("Pid {}, Connection request error {}".format(pid, e))
             except requests.exceptions.ConnectionError as e:
-                logging.error("Connection error {}".format(e))
+                logging.error("Pid {}, Connection error {}".format(pid, e))
             if i < RESUBMISSION_ATTEMPTS - 1:
                 time.sleep(SLEEP_TIME_AFTER_ERROR)
     finally:
@@ -190,6 +201,7 @@ def worker(proc_num, json_data, scenario, queue):
 
         logging.debug("Proc {}. Optimization has ended with incumbent {}".format(proc_num, incumbent))
     finally:
+        logging.debug("Proc {}. Adding in queue the incumbent".format(proc_num))
         queue.put(incumbent)
 
 
@@ -295,12 +307,15 @@ def run(param_file,
     queue = multiprocessing.Queue()
     for i in range(parallel_executions):
         p = multiprocessing.Process(target=worker, args=(i, json_data, scenario, queue))
+        logging.debug("Starting process {}".format(i))
         p.start()
         procs.append(p)
 
+    logging.debug("All process started")
+
     results = []
-    for i in procs:
-        i.join()
+    for i in range(parallel_executions):
+        logging.debug("Waiting for ending of process {}".format(i))
         results.append(queue.get())
 
     logging.debug("All incumbents: {}".format(results))

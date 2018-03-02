@@ -1,6 +1,6 @@
 # ABS Parameter Optimizer
 
-This tool, called ABS POPT allows the optimization of the parameters of a
+This tool, called ABS Parameter OPTimizer (ABS POPT) allows the optimization of the parameters of a
 model written in ABS.
 
 The basic idea is to run the simulation of the ABS model changing its
@@ -9,7 +9,11 @@ based on the output of the model and a metric to optimize.
 
 To understand what are the best parameters, instead of doing a grid search that
 could result in an explosion of the number of simulations to be run, we use the
-configurator optimizer [SMAC](http://www.cs.ubc.ca/labs/beta/Projects/SMAC/).
+configurator optimizer [SMAC](https://github.com/automl/SMAC3).
+
+Differently from the previous version of the tool that was exploiting the SMAC2 version,
+now ABS POPT uses SMAC3 and distributes the simulation works via HTTP POST requests (the
+previous version was perfroming the computation on the same machine).
 
 ## Tool installation
 
@@ -17,35 +21,98 @@ The tool can be easily install by using by using the
 [Docker](https://www.docker.com/) container technology.  Docker supports a
 huge variety of OS. In the following we assume that it is correctly installed
 on a Linux OS (a similar procedure can be used to install the tool on a
-Windows or MacOS).
-
-To create the Docker image please run the following command.
-
-```
-sudo docker pull jacopomauro/abs_popt
-```
-
-For more information related to Docker and how to use it we invite the reader
+Windows or MacOS). For more information related to Docker and how to use it we invite the reader
 to the documentation at [https://www.docker.com/](https://www.docker.com/).
 
 
-## Usage
+### Deploy the simulation microservices
 
-The tool requires the definition of an ABS model, the definition of the
-metric to evaluate a simulation, the definition of the settings to tune,
-and additional parameters to control the execution of the SMAC back-end.
-
-### Running the Docker container
-
-After the Docker image has been pulled, it is possible to start the create
-a Docker container as follows.
+ABS POPT delegates the task of performing the ABS simulations to microservices, dubbed WORKERS, via
+HTTP POST request. The WORKER microservice can be deployed locally by using Docker running the following
+commands.
 
 ```
-sudo docker run -i --net="host" --name abs_popt_container -t jacopomauro/abs_popt /bin/bash
+sudo docker pull jacopomauro/abs_optimizer:latest
+sudo docker run -d -p <PORT>:9001 --name worker_container jacopomauro/abs_optimizer:latest
 ```
 
-The Docker container called `abs_popt_container` will start and the bash
-prompt will be given.
+where `<PORT>` is the port used to use the functionalities of the service.
+
+To check if the microservice is succesfully deploy it is possible to send the following 
+HTTP request.
+
+```
+curl http://localhost:<PORT>/health
+```
+
+If the microservice is working you will obtain in return the message `OK`.
+
+### Deploy ABS POPT
+
+ABS POPT can be deployed by using Docker running the following commands.
+
+```
+sudo docker pull jacopomauro/abs_optimizer:main
+sudo docker run --net="host" -d --name controller_container jacopomauro/abs_optimizer:main \
+  /bin/bash -c "while true; do sleep 60; done"
+```
+
+## Tool usage
+
+Assuming that the one of more WORKER services (a load balancer can be used to exploit more
+instances of WORKER services) are reachable at the url `URL`, port `PORT`, hostname `HOST`,
+the first operation to run ABS POPT is to get access to the shell of the ABS POPT container by
+running:
+
+```
+sudo docker exec -i -t controller_container /bin/sh
+```
+
+The ABS POPT python program `abs_opt.py` is available in the current folder.
+
+ABS POPT to be run requires
+* one of more ABS file to run
+* one python program to parse the
+  output of the ABS simulation and compute the quality of the simulation (for more details please see below)
+* one file defining the parameters to optimize (for more details on the structure of this file please see below).
+
+As an example, ABS POPT comes with a simple ABS program requiring the compilation of two files, viz.
+`examples/hyvar/HyVarSym.abs` and `examples/hyvar/Settings.abs`, the parsing python program
+`examples/hyvar/solution_quality.py` and the parameter specification file `examples/hyvar/param_spec.json`.
+We will use these files to show a simple usage of ABS POPT.
+
+First of all to understand the settings of ABS POPT please run the following command:
+```
+python abs_opt.py run --help
+```
+
+ABS POPT allows to tune different parameters.
+To run the ABS POPT requiring at most 5 simulations or running for at most 1 hour, it is possible to run
+the following command.
+
+```
+python abs_opt.py run \
+ --param-file examples/hyvar/param_spec.json \
+ --abs-file examples/hyvar/HyVarSym.abs --abs-file examples/hyvar/Settings.abs \
+ --output-log-parser examples/hyvar/solution_quality.py \
+ --global-simulation-limit 5 \
+ --global-timeout 3600
+```
+
+This starts the execution of SMAC3 and presents in output the best result obtained.
+
+Please note that custom abs programs and files need to be 
+copied in the container (e.g., by using `scp` or the volume
+sharing capabilities of Docker).
+For instance, assuming that the path where the files are stored in `PATH` then 
+the ABS POPT container can be started with the following command.
+
+```
+sudo docker run --net="host" -v PATH:/files_directory -d --name controller_container jacopomauro/abs_optimizer:main \
+  /bin/bash -c "while true; do sleep 60; done"
+```
+
+The files will be available inside the container in the directory `/files_directory`.
 
 ### Defining the ABS model and the parameters
 
@@ -54,156 +121,102 @@ that can be tuned. Since ABS main execution does not support the setting
 of external parameters, for ABS POPT the ABS code need to contained for all
 parameters named `X` a unique line as follows.
 
-```
-def Int X() = 0;
-```
-
-For the time being parameters can only be integers.
-
-Once the model defining the parameters is defined, the location of the model
-can be given to ABS POPT by setting the correct variables in the `settings.py`
-present in the main directory of the repository. The model will need to be 
-copied in the container previously created (e.g., by using `scp` or the volume
-sharing capabilities of Docker).
-
-In particular we assume that all the parameters are defined in a single
-ABS program which location needs to be given using the variable `MODEL`.
-For instance, the following line states that the ABS code defining the
-parameters is defined in `Settings.abs` file save in the `abs_model` folder.
-
-```
-MODEL = "./abs_model/Settings.abs"
-```
-
-In case to run the model other files need to be compiled, then the list
-of the ABS files can be given using the variable `ADDITIONAL_ABS_FILES`.
-These will be the list of the files that with the one defined in the variable
-`MODEL` will be pass to the ABS compiler.
-
-The `settings.py` contains other useful variables to set to control the execution
-of the simulation:
-- the variable `CLOCK_LIMIT` allows the possibility to set the upper bound
-	of the clock of the ABS simulation (i.e., when the run is invoked with the
-	`-l' option). In case no upper bound is needed this value can be set to -1,
-- the variable `TIMEOUT` sets the timeout of the simulation in seconds. When
-	the timeout is triggered the model simulation is interrupted and evaluated
-	considering the output so far generated,
-- the variable `OUTPUT_TIMEOUT` allows the stop of a simulation in case the
-	program is bugged and does not output anything in less than `OUTPUT_TIMEOUT`
-	seconds. If the program is reliable and correct then this value can be set to
-  -1.
-- the variable `ERROR_NUMBER` allows to define how many times the program is
-	executed in case it was stop because it did not output anything in less then
-	`OUTPUT_TIMEOUT` seconds (assuming that this feature is used).
-
 ### Defining the metric
 
 ABS POPT tries to find out the best parameters maximizing the quality of
 a simulation.  It is vital therefore to provide a function that associates
 the output of a simulation with its quality.  This function is defined by
-means of a python program in the program `parse_abs_output.py`.
+means of a python program.
 
-In this program ABS POPT expects the user to define the python code to parse
-the output of the simulation and then return a real number representing
-the quality of the simulation. The function that performs that is called
-`compute_quality` that takes in input the string of the output generated by
-running the ABS model. SMAC will try to find configuration where the number
-returned by the `compute_quality` is smaller (minimization problem). 
+The python program has to take a textual file containing the output of the 
+ABS simulation and print a number representing the quality of the solution.
+ABS POPT tries to minimize this number (i.e., the smaller the number, the
+better is the quality of the simulation).
 
-In case of errors due to the model execution is is possible to avoid the
-computation of the quality raising an exception instead or returning a
-real value.
+In case of errors due to the model execution, the program can notify that by
+exiting with a status that is different than 0. This will be interpreted as
+an erroneous simulation.
 
 ### Defining the range of the parameters
 
 ABS POPT automatically selects possible domain values for the parameters but
 requires to understand what are the parameter considered and what are their
-possible ranges. The parameters are defined in the file `params.pcs`. The
-format to use is exactly the one used by the SMAC tool.  Please see
-[SMAC manual](http://www.cs.ubc.ca/labs/beta/Projects/SMAC/v2.10.03/manual.pdf)
-for more details.
+possible ranges. The parameters are defined in a JSON file.
 
-As an example, let us assume to have a parameter X that can range in the
-domain [1,10] and a parameter Y that can take the values {4,6,9}. Assume
-that the default value for X is 5 and that the default value for Y is 9.
+The JSON has a property called `"parameters"` that defines the parameters.
+Every parameter has a name, a type, possible values, and a default value.
+Types can be `"integer"` or `"ordinal"` to represent an interval of integers
+or a set of integers.
 
-This parameters can be defined as follows.
-
-```
-X integer [1,10] [5]
-Y ordinal {4,6,9} [9]
-```
-
-It is also possible to require the satisfaction of some constraints between
-the values taken by different parameters. For instance stating that the
-parameter X should be greater then Y can be done as follows.
+As an example in the following we are defining a parameter `p1` that can take
+values in the interval `1..10` (default value 1) and a parameter `p2` that can take values in the set
+`{4,6,7}` (default value 5).
 
 ```
-{ X <= Y }
+{  
+	"parameters":{  
+      "p1":{  
+         "type":"integer",
+         "values":[ 1,10 ]
+         ],
+         "default":1
+      },
+      "p2":{  
+         "type":"ordinal",
+         "values":[ 4,5,7 ]  
+         ],
+         "default":5
+      }
+    }
+}
 ```
 
-### Additional parameters to control SMAC
+Note that default values are only used as values to try the first simulation.
+ 
+## Running SMAC3 in parallel
 
-SMAC offers a lot of parameters that can be configured. These parameters can be
-set in the file `scenario.txt`.
-In particular, there are two parameters that the user needs to be aware of:
-- `numberOfRunsLimit` that limits the number of successful simulation runs
-	on a single machine (when ABS POPT is executed in parallel every execution
-	of SMAC can potentially perform up to `numberOfRunsLimit` simulations),
-- `wallClockLimit` that limits the overall time ABS POPT runs. The bound is
-	given in seconds.
+It is possible to run ABS POPT triggering parallel executions of SMAC.
+This can be done by simply setting the parameter `--parallel-executions`
+to the desired number of parallel runs.
 
-For more parameters we invite the reader to consult the 
-[SMAC manual](http://www.cs.ubc.ca/labs/beta/Projects/SMAC/v2.10.03/manual.pdf).
+Note that we recommend to have one worker for every execution of SMAC.
+To do so it is possible to deploy different workers and then use a load
+balancer to distribute the requests.
 
-### Running ABS POPT
-
-After the models has been copied, all the parameters setting fixed,
-ABS POPT can be run by invoking the following command within the 
-Docker container.
-
-```
-./run_smac.sh
-```
-
-By default this tool will invoke SMAC. Depending on the hardware, it is
-possible to configure the parallel runs of SMAC by setting the bash variable
-`PAR_PROC` to the number of desired parallel SMAC executions.
-
-It is recommended to run this command by using the
-`screen` utility. In this way it will be possible to monitor also the
-resource consumption of the Docker container and visualize the logs of the
-SMAC executions.
-
-The output of the tool will be saved in the directory `smac-output/test`
-following the output syntax of SMAC (the logs of the single execution of SMAC 
-are save in the files `log_run_smacXXX.log`).
-In case of parallel execution, it is possible to merge all the states to find
-the best combination of parameters tried so far.
-This can be done by running the following command.
+If a [Kubernetes](https://kubernetes.io/) is available, ABS POPT provides the scripts to set up the
+possibility to deploy multiple WORKER services coordinated by an 
+[HaProxy load balancer](https://github.com/jcmoraisjr/haproxy-ingress).
+Assuming the the user can run the `kubectl` to configure the cluster,
+the script to run is `kubernetes/deploy.sh`.
+This will create the load balancer with one instance of WORKER in the namespace
+`myapp-namespace`. To scale out it is possible to run the following command.
 
 ```
-./merge_states.sh smac-output/test smac-output/merge
-```
-
-This runs the SMAC utility to merge the parallel computation of SMAC creating
-a new merge state in the directory `smac-output/merge`.  It will also output
-the settings of the best simulation run so far and its quality.
-
-Note that the `run_smac.sh` can be run also to resume a finish computation
-to refine and possibly find better parameters.
-Assuming that the previous `merge_states.sh` has been run, this can be done
-by running the following command.
+kubectl scale deployment http-myapp --replicas=NUM
+``` 
+ 
+where N is the desired number of instanes of WORKER (NUM must be less than the number of nodes - 1).
+The kubernetes cluster will expose a service called `haproxy-ingress` on a given port.
+To find out which port it is please run the command
 
 ```
-./run_smac.sh --warmup smac-output/merge
+kubectl --namespace=myapp-namespace get services | grep haproxy-ingress
 ```
 
-In case the computation of SMAC has been interrupted it can be resumed by running
-the following command.
+Then, assuming that IP is one of the IP nodes of the cluster, PORT is the port to reach
+the service deployed on Kubernetes, it is possible to use this
+cluster to run the simulations by invoking ABS POPT as follows.
 
 ```
-./run_smac.sh --restore
+python abs_opt.py run \
+ --param-file ... \
+ --abs-file ... \
+ --output-log-parser ... \
+ --parallel-executions NUM \
+ --global-simulation-limit ... \
+ --server-url http://IP \
+ --server-port PORT \
+ --server-host myapp
 ```
 
 ### Cleaning
@@ -211,47 +224,8 @@ the following command.
 To clean up the Docker installation, the following commands can be used.
 
 ```
-sudo docker rm abs_popt_container
-sudo docker rmi jacopomauro/abs_popt
+sudo docker stop controller_container && sudo docker rm controller_container
+sudo docker stop worker_container && sudo docker rm worker_container
+sudo docker rmi jacopomauro/abs_optimizer:latest
+sudo docker rmi jacopomauro/abs_optimizer:latest
 ```
-
-## Using the Numascale cluster
-
-ABS POPT can be easily installed on Linux machines and therefore on the
-Numascale cluster (please see the Dockerfile to check the list of the packages
-required).
-
-To run the ABS POPT, assuming it has been properly installed, the following
-can be invoked.
-
-```
-./run_numascale.sh
-
-```
-
-As was happening with the `run_smac.sh` bash script, the number of 
-times SMAC is run in parallel can be configured by setting the variable
-`PAR_PROC`. By default, every execution of SMAC will use the computational 
-resources of a node and therefore `PAR_PROC` should be less than the number of 
-nodes of the cluster (note that every node can have more than one CPU that
-are exploited to speed up the simulation of the ABS model by using Erlang).
-
-## ABS Docker image to execute a simulation
-
-
-## WORK IN PROGREESS
-
-sudo docker pull jacopomauro/abs_optimizer
-sudo docker run -d -p <PORT>:9001 --name abs_run jacopomauro/abs_optimizer
-sudo docker stop abs_run
-sudo docker rm abs_run
-
-sudo docker run --net="host" -d --name abs_run_main jacopomauro/abs_optimizer:main /bin/bash -c "while true; do sleep 60; done"
-sudo docker exec -i -t abs_run_main /bin/bash
-sudo docker stop abs_run_main && sudo docker rm abs_run_main
-
-Change abs_optput_parser.py
-
-## Limitations
-
-- Categorical paramters are not yet supported

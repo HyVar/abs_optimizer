@@ -66,7 +66,18 @@ instance_speed = [instance_base_speed] * len(names)
 checking_avg_time_interval = int(math.ceil(float(60) * 1000 / instance_base_speed))
 
 # cooling off in time slots (multiple of checking_avg_time_interval)
-cooling_off_time = [300 * int(math.ceil(float(1000) / instance_base_speed))] * len(names)
+cooling_off_time = [300] * len(names)
+#cooling_off_time[names.index('encoder')] = 290
+cooling_off_time[names.index('hyvarrec')] = 300
+#cooling_off_time[names.index('decoder')] = 340
+#cooling_off_time[names.index('resolution_spl')] = 200
+#cooling_off_time[names.index('resolution_conf')] = 340
+cooling_off_time[names.index('variant_gen')] = 300
+cooling_off_time[names.index('code_gen')] = 300
+cooling_off_time[names.index('c_compiler')] = 300
+cooling_off_time[names.index('java_compiler')] = 300
+
+cooling_off_time = [x * int(math.ceil(float(1000) / instance_base_speed)) for x in cooling_off_time]
 
 # initial instances per component
 initial_instances = [1] * len(names)
@@ -74,24 +85,63 @@ initial_instances = [1] * len(names)
 
 # x scale in factor in ms
 scaling_in = [ 3*x for x in avg_times]
-#scaling_in[names.index('hyvarrec')] = 47*1000
-#scaling_in[names.index('c_compiler')] = 224*1000
-#scaling_in[names.index('java_compiler')] = 200*1000
 
-scaling_in = [max(x,1000.0) for x in scaling_in]
+
+#scaling_in[names.index('encoder')] = 290
+scaling_in[names.index('hyvarrec')] = 3 * 500
+#scaling_in[names.index('decoder')] = 340
+#scaling_in[names.index('resolution_spl')] = 200
+#scaling_in[names.index('resolution_conf')] = 340
+scaling_in[names.index('variant_gen')] = 3 * 500
+scaling_in[names.index('code_gen')] = 10 * 500
+scaling_in[names.index('c_compiler')] = 12 * 500
+scaling_in[names.index('java_compiler')] = 18 * 500
+
+scaling_in = [max(x,instance_base_speed) for x in scaling_in]
+
+
 
 # x scale out factor in ms
 scaling_out_diff = [ x for x in avg_times]
 
+#scaling_out_diff[names.index('encoder')] = 290
+scaling_out_diff[names.index('hyvarrec')] = 1 * 500
+#scaling_out_diff[names.index('decoder')] = 340
+#scaling_out_diff[names.index('resolution_spl')] = 200
+#scaling_out_diff[names.index('resolution_conf')] = 340
+scaling_out_diff[names.index('variant_gen')] = 1 * 500
+scaling_out_diff[names.index('code_gen')] = 1 * 500
+scaling_out_diff[names.index('c_compiler')] = 1 * 500
+scaling_out_diff[names.index('java_compiler')] = 1 * 500
+
 # amount of instance to increase every scale in
 scale_in_amount_list = [1] * len(names)
-#scale_in_amount_list = [0]*5
+
+#scale_in_amount_list[names.index('encoder')] = 290
+scale_in_amount_list[names.index('hyvarrec')] = 1
+#scale_in_amount_list[names.index('decoder')] = 340
+#scale_in_amount_list[names.index('resolution_spl')] = 200
+#scale_in_amount_list[names.index('resolution_conf')] = 340
+scale_in_amount_list[names.index('variant_gen')] = 1
+scale_in_amount_list[names.index('code_gen')] = 1
+scale_in_amount_list[names.index('c_compiler')] = 1
+scale_in_amount_list[names.index('java_compiler')] = 1
+
 # amount of instance to decrease every scale out
 scale_out_amount_list = [1] * len(names)
-#scale_out_amount_list = [0]*5
+
+#scale_out_amount_list[names.index('encoder')] = 290
+scale_out_amount_list[names.index('hyvarrec')] = 1
+#scale_out_amount_list[names.index('decoder')] = 340
+#scale_out_amount_list[names.index('resolution_spl')] = 200
+#scale_out_amount_list[names.index('resolution_conf')] = 340
+scale_out_amount_list[names.index('variant_gen')] = 1
+scale_out_amount_list[names.index('code_gen')] = 1
+scale_out_amount_list[names.index('c_compiler')] = 1
+scale_out_amount_list[names.index('java_compiler')] = 1
+
 # drop requests x-> discard x and keep the x + 1
 drop_requests = [0] * len(names)
-
 
 #scaling_down_ratio (RAT)
 # pending_jobs <  size(keys(instances)) * scaling_down_ratio

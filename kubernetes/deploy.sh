@@ -21,3 +21,7 @@ kubectl --namespace=myapp-namespace get services | grep haproxy-ingress
 # the ip is one of the IPs of the nodes of the cluster
 # the port is the NodePort used to redirect port 80
 # the OPERATION is the operation name to be invoked
+
+
+#to check the logs of the pods
+# for i in `kubectl get pods | grep myapp | awk '{ print $1}'`; do kubectl logs $i; done | tee log.log
