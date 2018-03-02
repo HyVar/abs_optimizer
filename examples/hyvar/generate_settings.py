@@ -1,7 +1,7 @@
 import math
 
 # the instance speed in ms for a timeslot
-instance_base_speed = 500
+instance_base_speed = 1000
 
 # speed consumption in ms after which instances may switch jobs
 switch_time_slot = 250
@@ -28,7 +28,7 @@ names = [
   'java_compiler']
 
 # average time of every component in ms
-avg_times = [500]*len(names)
+avg_times = [instance_base_speed]*len(names)
 avg_times[names.index('encoder')] = 290
 avg_times[names.index('hyvarrec')] = 620
 avg_times[names.index('decoder')] = 340
@@ -65,7 +65,7 @@ instance_speed = [instance_base_speed] * len(names)
 # checking_avg_time_interval (final result in time slots)
 checking_avg_time_interval = int(math.ceil(float(60) * 1000 / instance_base_speed))
 
-# cooling off in time slots (multiple of checking_avg_time_interval)
+# cooling off in ms (multiple of checking_avg_time_interval)
 cooling_off_time = [300] * len(names)
 #cooling_off_time[names.index('encoder')] = 290
 cooling_off_time[names.index('hyvarrec')] = 300
@@ -86,16 +86,15 @@ initial_instances = [1] * len(names)
 # x scale in factor in ms
 scaling_in = [ 3*x for x in avg_times]
 
-
 #scaling_in[names.index('encoder')] = 290
-scaling_in[names.index('hyvarrec')] = 3 * 500
+scaling_in[names.index('hyvarrec')] = 3 * instance_base_speed
 #scaling_in[names.index('decoder')] = 340
 #scaling_in[names.index('resolution_spl')] = 200
 #scaling_in[names.index('resolution_conf')] = 340
-scaling_in[names.index('variant_gen')] = 3 * 500
-scaling_in[names.index('code_gen')] = 10 * 500
-scaling_in[names.index('c_compiler')] = 12 * 500
-scaling_in[names.index('java_compiler')] = 18 * 500
+scaling_in[names.index('variant_gen')] = 3 * instance_base_speed
+scaling_in[names.index('code_gen')] = 10 * instance_base_speed
+scaling_in[names.index('c_compiler')] = 12 * instance_base_speed
+scaling_in[names.index('java_compiler')] = 18 * instance_base_speed
 
 scaling_in = [max(x,instance_base_speed) for x in scaling_in]
 
@@ -105,14 +104,14 @@ scaling_in = [max(x,instance_base_speed) for x in scaling_in]
 scaling_out_diff = [ x for x in avg_times]
 
 #scaling_out_diff[names.index('encoder')] = 290
-scaling_out_diff[names.index('hyvarrec')] = 1 * 500
+scaling_out_diff[names.index('hyvarrec')] = 1 * instance_base_speed
 #scaling_out_diff[names.index('decoder')] = 340
 #scaling_out_diff[names.index('resolution_spl')] = 200
 #scaling_out_diff[names.index('resolution_conf')] = 340
-scaling_out_diff[names.index('variant_gen')] = 1 * 500
-scaling_out_diff[names.index('code_gen')] = 1 * 500
-scaling_out_diff[names.index('c_compiler')] = 1 * 500
-scaling_out_diff[names.index('java_compiler')] = 1 * 500
+scaling_out_diff[names.index('variant_gen')] = 1 * instance_base_speed
+scaling_out_diff[names.index('code_gen')] = 1 * instance_base_speed
+scaling_out_diff[names.index('c_compiler')] = 1 * instance_base_speed
+scaling_out_diff[names.index('java_compiler')] = 1 * instance_base_speed
 
 # amount of instance to increase every scale in
 scale_in_amount_list = [1] * len(names)
