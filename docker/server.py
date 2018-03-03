@@ -107,7 +107,8 @@ class MyServer(BaseHTTPRequestHandler):
                 #logging.debug('Stdout of abs compilation: {}'.format(out))
                 logging.debug('Stderr of abs compilation: {}'.format(err))
                 if proc.returncode != 0:
-                    raise ValueError("Compilation of ABS program ended up with return code {}".format(proc.returncode))
+                    raise ValueError("Compilation of ABS program ended up with return code {}, stderr {}".format(
+                        proc.returncode, err))
 
                 logging.info('Running model in directory {}'.format(temp_dir))
                 cmd = ["timeout", str(ABS_EXECUTION__TIMEOUT), "./gen/erl/run"] + extra_param
@@ -117,7 +118,8 @@ class MyServer(BaseHTTPRequestHandler):
                 logging.debug('Stderr of abs execution: {}'.format(err))
                 if proc.returncode != 0:
                     raise ValueError(
-                        "Execution of ABS program ended up with return code {}".format(proc.returncode))
+                        "Execution of ABS program ended up with return code {}, stderr {}".format(
+                            proc.returncode, err))
 
                 if python_prog:
                     # save output in a file
