@@ -34,8 +34,8 @@ ENV PATH /abstools/frontend/bin/bash:$PATH
 # install the absc compiler from the dockerhub image
 #COPY --from=abslang/collaboratory:latest /usr/local/lib/frontend/dist/absfrontend.jar /absfrontend.jar
 
-RUN echo 'java -Xmx512m -jar /absfrontend.jar "$@"' > /usr/bin/absc && \
-	chmod 700 /usr/bin/absc
+#RUN echo 'java -Xmx512m -jar /absfrontend.jar "$@"' > /usr/bin/absc && \
+#	chmod 700 /usr/bin/absc
 
 # clone abs_optimizer
 RUN git clone --depth=1 -b demonstrator2 https://github.com/HyVar/abs_optimizer.git
