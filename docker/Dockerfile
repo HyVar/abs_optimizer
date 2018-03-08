@@ -19,8 +19,20 @@ RUN \
 			click \
 			requests
 
+# if the compilation of abs tools is needed
+RUN \
+  apt-get update && apt-get install -y \
+		make \
+		default-jdk \
+		ant && \
+	cd / && \
+	git clone --depth=1 https://github.com/abstools/abstools.git && \
+	cd abstools && \
+	make 
+ENV PATH /abstools/frontend/bin/bash:$PATH
+
 # install the absc compiler from the dockerhub image
-COPY --from=abslang/collaboratory:latest /usr/local/lib/frontend/dist/absfrontend.jar /absfrontend.jar
+#COPY --from=abslang/collaboratory:latest /usr/local/lib/frontend/dist/absfrontend.jar /absfrontend.jar
 
 RUN echo 'java -Xmx512m -jar /absfrontend.jar "$@"' > /usr/bin/absc && \
 	chmod 700 /usr/bin/absc
