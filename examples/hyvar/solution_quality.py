@@ -60,8 +60,8 @@ def evaluate(lines):
     area = 0
     time = 0
     for i in sorted(vms.keys()):
-        counter += vms[i]
         area += (i-time) * counter
+        counter += vms[i]        
         time = i
     area = (end-time)*counter
     average_vms = area / end
@@ -69,7 +69,7 @@ def evaluate(lines):
     if average_latency > 300000:
         return average_latency
     else:
-        return area*100
+        return average_vms*100
 
 
 @click.command()
