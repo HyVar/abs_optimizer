@@ -117,9 +117,16 @@ class MyServer(BaseHTTPRequestHandler):
                 #logging.debug('Stdout of abs compilation: {}'.format(out))
                 logging.debug('Stderr of abs execution: {}'.format(err))
                 if proc.returncode != 0:
+                    # collect the dump file if available
+                    dump_path = ""
+                    dump = ""
+                    if os.path.isfile(os.path.join(temp_dir,"gen/erl/run","erl_crash.dump")):
+                        dump_path = os.path.join(temp_dir, "gen/erl/run", "erl_crash.dump")
+                        with open(dump_path) as f:
+                            dump = f.read()
                     raise ValueError(
-                        "Execution of ABS program ended up with return code {}, stderr {}".format(
-                            proc.returncode, err))
+                        "Execution of ABS program ended up with return code {}, stderr {}, dump {}: {}".format(
+                            proc.returncode, err, dump_path, dump))
 
                 if python_prog:
                     # save output in a file

@@ -44,7 +44,7 @@
          "type":"integer",
          "values":[  
             2,
-            300
+            100
          ],
          "default":3
       },
@@ -52,7 +52,7 @@
          "type":"integer",
          "values":[  
             7,
-            300
+            100
          ],
          "default":10
       },
@@ -60,7 +60,7 @@
          "type":"integer",
          "values":[  
             8,
-            300
+            100
          ],
          "default":12
       },
@@ -68,7 +68,7 @@
          "type":"integer",
          "values":[  
             12,
-            300
+            100
          ],
          "default":18
       },
@@ -76,7 +76,7 @@
          "type":"integer",
          "values":[  
             2,
-            300
+            100
          ],
          "default":3
       },
