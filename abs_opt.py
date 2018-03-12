@@ -198,7 +198,7 @@ def worker(proc_num, json_data, scenario, queue):
                     run_id=proc_num)
 
         logging.debug("Proc {}. Starting the optimization".format(proc_num))
-        smac.optimize()
+        incumbent = smac.optimize()
         runs = smac.stats.ta_runs
 
         logging.debug("Proc {}. Optimization has ended with incumbent {}".format(proc_num, incumbent))
