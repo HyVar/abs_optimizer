@@ -13,6 +13,7 @@ import tempfile
 import re
 import requests
 import time
+import datetime
 
 # Import ConfigSpace and different types of parameters
 from smac.configspace import ConfigurationSpace
@@ -173,10 +174,10 @@ def evaluate_configuration(cfg):
 
 
 def worker(proc_num, json_data, scenario, queue):
-
+    start_running_time = datetime.datetime.now()
+    runs = 0
     try:
         logging.debug("Worker {} started".format(proc_num))
-        incumbent = None
 
         # first process tried the default configuration
         if proc_num == 0:
@@ -197,12 +198,16 @@ def worker(proc_num, json_data, scenario, queue):
                     run_id=proc_num)
 
         logging.debug("Proc {}. Starting the optimization".format(proc_num))
-        incumbent = smac.optimize()
+        smac.optimize()
+        runs = smac.stats.ta_runs
 
         logging.debug("Proc {}. Optimization has ended with incumbent {}".format(proc_num, incumbent))
     finally:
-        logging.debug("Proc {}. Adding in queue the incumbent".format(proc_num))
-        queue.put(incumbent)
+        delta = datetime.datetime.now() - start_running_time
+        total_time = delta.total_seconds()
+        logging.debug("Proc {} ended after {} seconds with {} runs".format(
+            proc_num,total_time,runs))
+        queue.put(runs)
 
 
 @click.command()
@@ -318,7 +323,7 @@ def run(param_file,
         logging.debug("Waiting for ending of process {}".format(i))
         results.append(queue.get())
 
-    logging.debug("All incumbents: {}".format(results))
+    logging.debug("All runs: {}".format(results))
 
     dirs = [os.path.join(scenario["output_dir"], f) for f in os.listdir(scenario["output_dir"])
             if os.path.isdir(os.path.join(scenario["output_dir"], f))]

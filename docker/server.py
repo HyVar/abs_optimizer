@@ -122,6 +122,9 @@ class MyServer(BaseHTTPRequestHandler):
                     dump = ""
                     if os.path.isfile(os.path.join(temp_dir,"gen/erl/run","erl_crash.dump")):
                         dump_path = os.path.join(temp_dir, "gen/erl/run", "erl_crash.dump")
+                    if os.path.isfile(os.path.join(temp_dir,"erl_crash.dump")):
+                        dump_path = os.path.join(temp_dir, "gen/erl/run", "erl_crash.dump")
+                    if dump_path:
                         with open(dump_path) as f:
                             dump = f.read()
                     raise ValueError(
