@@ -34,7 +34,7 @@ COMP_LOG_FILENAMES = {
 SCALING_LOG_SUFFIX = "_scaling.log"
 HAPROXY_LOG_SUFFIX = "_haproxy_updater.log"
 
-JOB_LOG_FILENAME = "requestmetrics.csv"
+JOB_LOG_FILENAME_SUFFIX = "requestmetrics.csv"
 GLOBAL_COMPONENT_NAME = "__global__"
 
 def parse_time_stamp(s):
@@ -146,10 +146,13 @@ def parse_scaling_log(lines,starting_time=0,ending_time=0):
                         averages[time] = int(m.group(1))
                     else:
                         m = re.match("(Average latency for the last [0-9]+ minutes is [0-9]+ ms)" +
+                                     "|(Last scaling action was less then [0-9]+ minute\(s\) ago, no more actions allowed yet)" +
                                      "|([0-9]+ latency measurements found in the last [0-9]+ minutes)" +
                                      "|(No loads and latencies, doing nothing)" +
                                      "|(Average latency [0-9]+ is above high threshold of [0-9]+ seconds)" +
-                                     "|(Average latency [0-9]+ is below low threshold of [0-9]+ seconds)",
+                                     "|(Average latency [0-9]+ is below low threshold of [0-9]+ seconds)" +
+                                     "|(Detaching instances \[.*\])" +
+                                     "|(Terminated detached instances \[.*\])",
                                      message)
                         if m is None:
                             logging.warning("Scaling log not recognized: <<<{}>>>".format(message))
@@ -219,7 +222,13 @@ def main(port,
     requests = {}
     instances = {}
 
-    file_name = os.path.join(logs_dir,JOB_LOG_FILENAME)
+    file_name = [os.path.join(logs_dir,x) for x in os.listdir(logs_dir) if x.endswith(JOB_LOG_FILENAME_SUFFIX)]
+    if file_name:
+        file_name = file_name[0]
+    else:
+        logging.critical("No {} file found in directory {}".format(JOB_LOG_FILENAME_SUFFIX,logs_dir))
+        sys.exit(1)
+
     logging.info("Parsing jobs file {}".format(file_name))
     if not os.path.isfile(file_name):
         logging.critical("File {} not found. Exiting.".format(file_name))
@@ -258,51 +267,51 @@ def main(port,
             if i in instances[j]:
                 counter += instances[j][i]
             else:
-                logging.warning("Not found number of instances for component {} at minute {}".format(j,i))
+                instances[j][i] = instances[j][i-1] if i-1 in instances[j] else 0
+                logging.warning("Not found number of instances for component {} at minute {}. Assigning previous value {}".format(
+                    j, i, instances[j][i]))
+
         instances[GLOBAL_COMPONENT_NAME][i] = counter
     logging.info("Average number of virtual machines: {}".format(
         float(sum(instances[GLOBAL_COMPONENT_NAME].values())/len(instances[GLOBAL_COMPONENT_NAME]))))
 
     if send_data:
 
-        logging.info("Resetting")
-        for c in ["component_" + x for x in COMP_LOG_FILENAMES] + [GLOBAL_COMPONENT_NAME]:
-            r = request_lib.get("{}:{}/call/{}/reset_real_history".format(url,port,c))
-            if r.status_code != 200:
-                logging.warning("GET request at {} failed with code {}: {}".format(r.url, r.status_code, r.text))
-            if sleep_time:
-                time.sleep(sleep_time)
+        # logging.info("Resetting")
+        # for c in ["component_" + x for x in COMP_LOG_FILENAMES] + [GLOBAL_COMPONENT_NAME]:
+        #     r = request_lib.get("{}:{}/call/{}/reset_real_history".format(url,port,c))
+        #     if r.status_code != 200:
+        #         logging.warning("GET request at {} failed with code {}: {}".format(r.url, r.status_code, r.text))
+        #     if sleep_time:
+        #         time.sleep(sleep_time)
         logging.info("Sending real data to ABS simulation")
 
         for c in COMP_LOG_FILENAMES:
-            for i in sorted(latencies[c].keys()):
-                r = request_lib.get("{}:{}/call/component_{}/add_real_info?latency={}&instances={}&requests={}".format(
-                    url,
-                    port,
-                    c,
-                    latencies[c][i],
-                    instances[c][i],
-                    requests[c][i],
-                ))
-                if r.status_code != 200:
-                    logging.warning("GET request at {} failed with code {}: {}".format(r.url,r.status_code, r.text))
-                if sleep_time:
-                    time.sleep(sleep_time)
+            data = {
+                "instances": [instances[c][i] for i in sorted(instances[c])],
+                "latency": [latencies[c][i] for i in sorted(latencies[c])],
+                "requests": [requests[c][i] for i in sorted(requests[c])]
+            }
 
-        # update global component
-        for i in sorted(latencies[GLOBAL_COMPONENT_NAME].keys()):
-            r = request_lib.get("{}:{}/call/{}/add_real_info?latency={}&instances={}&requests={}".format(
-                url,
-                port,
-                GLOBAL_COMPONENT_NAME,
-                latencies[GLOBAL_COMPONENT_NAME][i],
-                instances[GLOBAL_COMPONENT_NAME][i],
-                requests[GLOBAL_COMPONENT_NAME][i]
-            ))
+            r = request_lib.get("{}:{}/call/component_{}/add_real_info_at_once".format(url, port, c),
+                                data=json.dumps(data))
             if r.status_code != 200:
-                logging.warning("GET request at {} failed with code {}: {}".format(r.url, r.status_code, r.text))
+                logging.warning("GET request at {} failed with code {}: {}".format(r.url,r.status_code, r.text))
             if sleep_time:
                 time.sleep(sleep_time)
+
+        # update global component
+        c = GLOBAL_COMPONENT_NAME
+        data = {
+            "instances": [instances[c][i] for i in sorted(instances[c])],
+            "latency": [latencies[c][i] for i in sorted(latencies[c])],
+            "requests": [requests[c][i] for i in sorted(requests[c])]
+        }
+
+        r = request_lib.get("{}:{}/call/{}/add_real_info_at_once".format(url, port, c),
+                                data=json.dumps(data))
+        if r.status_code != 200:
+            logging.warning("GET request at {} failed with code {}: {}".format(r.url, r.status_code, r.text))
 
 if __name__ == "__main__":
     main()

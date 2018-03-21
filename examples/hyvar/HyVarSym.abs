@@ -174,6 +174,7 @@ interface LoadBalancer {
 	Unit kill(); // kill instance at the end of simulation
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
 	[HTTPCallable] Unit add_real_info(Int latency, Int instances, Int requests); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info_at_once(List<Int> latency, List<Int> instances, List<Int> requests); // method used for visualization purposes
 	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
 	[HTTPCallable] Unit reset_real_history(); // method used for visualization purposes
 	
@@ -458,6 +459,12 @@ class LoadBalancer(String name,
 		real_requests_in_time = Cons(requests,real_requests_in_time);
 	}
 
+	Unit add_real_info_at_once(List<Int> latency, List<Int> instances, List<Int> requests) {
+		real_latency_in_time = reverse(latency);
+		real_instances_in_time = reverse(instances);
+		real_requests_in_time = reverse(requests);
+	}
+
 	Visualization get_real_history() {
 		return Visualization(
 			name,
@@ -479,6 +486,7 @@ interface Orchestrator {
 	Unit init();
 	[HTTPCallable] Visualization get_history(); // method used for visualization purposes
 	[HTTPCallable] Unit add_real_info(Int latency, Int instances, Int requests); // method used for visualization purposes
+	[HTTPCallable] Unit add_real_info_at_once(List<Int> latency, List<Int> instances, List<Int> requests); // method used for visualization purposes
 	[HTTPCallable] Visualization get_real_history(); // method used for visualization purposes
 	[HTTPCallable] Unit reset_real_history(); // method used for visualization purposes
 }
@@ -543,7 +551,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		second_round_a = map((String i) => lookupUnsafe(components_map,i))(
 			list[
 				"resolution_spl",
-				"resolution_conf",
+				"resolution_spl",
 				"encoder",
 				"hyvarrec",
 				"decoder",
@@ -553,7 +561,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		second_round_b_and_c = map((String i) => lookupUnsafe(components_map,i))(
 				list[
 					"resolution_spl",
-					"resolution_conf",
+					"resolution_spl",
 					"encoder",
 					"hyvarrec",
 					"decoder",
@@ -646,6 +654,12 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 		real_latency_in_time = Cons(latency,real_latency_in_time);
 		real_instances_in_time = Cons(instances,real_instances_in_time);
 		real_requests_in_time = Cons(requests,real_requests_in_time);
+	}
+
+	Unit add_real_info_at_once(List<Int> latency, List<Int> instances, List<Int> requests) {
+		real_latency_in_time = reverse(latency);
+		real_instances_in_time = reverse(instances);
+		real_requests_in_time = reverse(requests);
 	}
 
 	Visualization get_real_history() {
@@ -747,7 +761,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
+	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),17000));
 	orchestrator!init();
 	
 }
