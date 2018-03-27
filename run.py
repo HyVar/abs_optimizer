@@ -49,7 +49,6 @@ def simple_run(new_dir):
                   "./gen/erl/run", "-l", unicode(settings.CLOCK_LIMIT) ],
           stdout=PIPE, stderr=PIPE, cwd=new_dir )    
     out, err = proc.communicate()
-    run_time = time.time() - start_time
     log.debug('Stdout of abs compilation')
     log.debug(err)
     return out
@@ -198,8 +197,10 @@ def main(argv):
 
     log.info('Running model compiled in directory ' + new_dir)
         
-    #out = simple_run(new_dir)
-    out = detect_fast_crash_with_files(new_dir)
+    if settings.OUTPUT_TIMEOUT < 0:
+        out = simple_run(new_dir)
+    else:
+        out = detect_fast_crash_with_files(new_dir)
     
     if not out:
         log.info("Detected a crash, try another attempt")
