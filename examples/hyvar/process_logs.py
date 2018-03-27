@@ -37,9 +37,14 @@ HAPROXY_LOG_SUFFIX = "_haproxy_updater.log"
 JOB_LOG_FILENAME_SUFFIX = "requestmetrics.csv"
 GLOBAL_COMPONENT_NAME = "__global__"
 
+
 def parse_time_stamp(s):
     # given a time in format '%Y-%m-%d %H:%M:%S,%f' return the seconds from the beginning of epoch
     return time_import.mktime(time_import.strptime(s,'%Y-%m-%d %H:%M:%S,%f'))
+
+
+def get_minutes(time,zero=0):
+    return int(math.floor(float(time) / 60)) - zero
 
 
 def parse_jobs_log(lines):
@@ -79,13 +84,15 @@ def parse_jobs_log(lines):
     logging.info("Max time: {}".format(max_time))
 
     logging.debug("Computing request and latencies per minute")
-    latencies = {int(math.floor(float(i) / 60)): 0 for i in range(0,(max_time-min_time)+59, 60)}
-    counters = {int(math.floor(float(i) / 60)): 0 for i in range(0,(max_time-min_time)+59, 60)}
-    requests = {int(math.floor(float(i) / 60)): 0 for i in range(0,(max_time-min_time)+59, 60)}
+    min_min = get_minutes(min_time)
+    max_min = get_minutes(max_time)
+    latencies = {i: 0 for i in range(0,max_min-min_min+1)}
+    counters = {i: 0 for i in range(0,max_min-min_min+1)}
+    requests = {i: 0 for i in range(0,max_min-min_min+1)}
     for i in total_time:
-        requests[int(math.floor(float(start_time[i] - min_time) / 60))] += 1
-        counters[int(math.floor(float(end_time[i] - min_time) / 60))] += 1
-        latencies[int(math.floor(float(end_time[i] - min_time) / 60))] += total_time[i]
+        requests[get_minutes(start_time[i], min_min)] += 1
+        counters[get_minutes(end_time[i], min_min)] += 1
+        latencies[get_minutes(end_time[i], min_min)] += total_time[i]
     for i in counters:
         if counters[i] > 0:
             latencies[i] = int(float(latencies[i]) / counters[i])
@@ -109,6 +116,9 @@ def parse_haproxy_updater_log(lines,starting_time=0, ending_time=0):
                 if m:
                     ips = m.group(1)
                     ls = re.findall("'[0-9\.]*'",ips)
+                    if time in instance_count:
+                        logging.warning("Rewriting instance count for time {} with value {} (previous value {})".format(
+                            time, len(ls), instance_count[time]))
                     instance_count[time] = len(ls)
                 else:
                     m = re.match("(__main__:No difference between healthy instances and enabled instances in HAProxy config)" +
@@ -139,10 +149,17 @@ def parse_scaling_log(lines,starting_time=0,ending_time=0):
                 message = m.group(2)
                 m = re.match("([0-9]+) latency measurements found in the last minute", message)
                 if m:
+                    if time in requests_count:
+                        logging.warning("Rewriting requests_count for time {} with value {} (previous value {})".format(
+                            time, int(m.group(1)), requests_count[time]))
                     requests_count[time] = int(m.group(1))
                 else:
                     m = re.match("Average latency for the last minute is ([0-9]+) ms", message)
                     if m:
+                        if time in averages:
+                            logging.warning(
+                                "Rewriting averages for time {} with value {} (previous value {})".format(
+                                    time, int(m.group(1)), averages[time]))
                         averages[time] = int(m.group(1))
                     else:
                         m = re.match("(Average latency for the last [0-9]+ minutes is [0-9]+ ms)" +
@@ -238,26 +255,30 @@ def main(port,
         min_time, max_time, latencies[GLOBAL_COMPONENT_NAME], requests[GLOBAL_COMPONENT_NAME] = parse_jobs_log(lines)
 
     for c in COMP_LOG_FILENAMES:
+        print os.listdir(logs_dir)
 
         file_name = [x for x in os.listdir(logs_dir) if x.endswith(COMP_LOG_FILENAMES[c] + SCALING_LOG_SUFFIX)]
         if not file_name:
-            logging.critical("File {} not found. Exiting.".format(file_name))
-            sys.exit(1)
-        file_name = os.path.join(logs_dir, file_name[0])
-        logging.debug("Parsing file {}".format(file_name))
-        with open(file_name,'rb') as f:
-            lines = f.readlines()
-            requests[c], latencies[c] = parse_scaling_log(lines,min_time,max_time+60)
+            logging.critical("Scaling lof for component {} not found".format(c))
+            requests[c] = {}
+            latencies[c] = {}
+        else:
+            file_name = os.path.join(logs_dir, file_name[0])
+            logging.debug("Parsing file {}".format(file_name))
+            with open(file_name,'rb') as f:
+                lines = f.readlines()
+                requests[c], latencies[c] = parse_scaling_log(lines,min_time,max_time+60)
 
         file_name = [x for x in os.listdir(logs_dir) if x.endswith(COMP_LOG_FILENAMES[c] + HAPROXY_LOG_SUFFIX)]
         if not file_name:
-            logging.critical("File {} not found. Exiting.".format(file_name))
-            sys.exit(1)
-        file_name = os.path.join(logs_dir, file_name[0])
-        logging.debug("Parsing file {}".format(file_name))
-        with open(file_name,'rb') as f:
-            lines = f.readlines()
-            instances[c] = parse_haproxy_updater_log(lines,min_time,max_time+60)
+            logging.critical("Updating  log for component {} not found".format(c))
+            instances[c] = {}
+        else:
+            file_name = os.path.join(logs_dir, file_name[0])
+            logging.debug("Parsing file {}".format(file_name))
+            with open(file_name,'rb') as f:
+                lines = f.readlines()
+                instances[c] = parse_haproxy_updater_log(lines,min_time,max_time+60)
 
     # sum up all the instances for the global component
     instances[GLOBAL_COMPONENT_NAME] = {}
