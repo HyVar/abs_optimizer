@@ -29,15 +29,15 @@ names = [
 
 # average time of every component in ms
 avg_times = [instance_base_speed]*len(names)
-avg_times[names.index('encoder')] = 351
-avg_times[names.index('hyvarrec')] = 644
-avg_times[names.index('decoder')] = 306
-avg_times[names.index('resolution_spl')] = 252
+avg_times[names.index('encoder')] = 344
+avg_times[names.index('hyvarrec')] = 1067
+avg_times[names.index('decoder')] = 305
+avg_times[names.index('resolution_spl')] = 220
 #avg_times[names.index('resolution_conf')] = 340
-avg_times[names.index('variant_gen')] = 445
-avg_times[names.index('code_gen')] = 3768
-avg_times[names.index('c_compiler')] = 7909
-avg_times[names.index('java_compiler')] = 6849
+avg_times[names.index('variant_gen')] = 630
+avg_times[names.index('code_gen')] = 14988
+avg_times[names.index('c_compiler')] = 23828
+avg_times[names.index('java_compiler')] = 22595
 
 # init time for instances in ms
 instance_init_times = [240*1000]*len(names)
@@ -86,30 +86,30 @@ initial_instances = [1] * len(names)
 # x scale in factor in ms
 scaling_in = [ 3*x for x in avg_times]
 
-scaling_in[names.index('encoder')] = 702
-scaling_in[names.index('hyvarrec')] = 1288
-scaling_in[names.index('decoder')] = 612
-scaling_in[names.index('resolution_spl')] = 504
+scaling_in[names.index('encoder')] = 688
+scaling_in[names.index('hyvarrec')] = 2134
+scaling_in[names.index('decoder')] = 610
+scaling_in[names.index('resolution_spl')] = 440
 #scaling_in[names.index('resolution_conf')] = 504
-scaling_in[names.index('variant_gen')] = 890
-scaling_in[names.index('code_gen')] = 7536
-scaling_in[names.index('c_compiler')] = 15818
-scaling_in[names.index('java_compiler')] = 13698
+scaling_in[names.index('variant_gen')] = 1260
+scaling_in[names.index('code_gen')] = 29976
+scaling_in[names.index('c_compiler')] = 47656
+scaling_in[names.index('java_compiler')] = 45190
 
 scaling_in = [max(x,instance_base_speed) for x in scaling_in]
 
 # x scale out factor in ms
 scaling_out_diff = [ x for x in avg_times]
 
-scaling_out_diff[names.index('encoder')] = 1053
-scaling_out_diff[names.index('hyvarrec')] = 1932
-scaling_out_diff[names.index('decoder')] = 918
-scaling_out_diff[names.index('resolution_spl')] = 756
+scaling_out_diff[names.index('encoder')] = 1032
+scaling_out_diff[names.index('hyvarrec')] = 3201
+scaling_out_diff[names.index('decoder')] = 915
+scaling_out_diff[names.index('resolution_spl')] = 660
 #scaling_out_diff[names.index('resolution_conf')] = 756
-scaling_out_diff[names.index('variant_gen')] = 1335
-scaling_out_diff[names.index('code_gen')] = 11304
-scaling_out_diff[names.index('c_compiler')] = 23727
-scaling_out_diff[names.index('java_compiler')] = 20547
+scaling_out_diff[names.index('variant_gen')] = 1890
+scaling_out_diff[names.index('code_gen')] = 44964
+scaling_out_diff[names.index('c_compiler')] = 71484
+scaling_out_diff[names.index('java_compiler')] = 67785
 
 # amount of instance to increase every scale in
 scale_in_amount_list = [1] * len(names)

@@ -29,26 +29,26 @@ def Int initial_instances_c_compiler() =  1 ;
 def Int initial_instances_java_compiler() =  1 ;
 def List<Int> initial_instances_list() = list [initial_instances_encoder(),initial_instances_hyvarrec(),initial_instances_decoder(),initial_instances_resolution_spl(),initial_instances_variant_gen(),initial_instances_code_gen(),initial_instances_c_compiler(),initial_instances_java_compiler()] ;
 
-def List<Int>  instance_cost_list() = list [351, 644, 306, 252, 445, 3768, 7909, 6849] ;
+def List<Int>  instance_cost_list() = list [344, 1067, 305, 220, 630, 14988, 23828, 22595] ;
 
 def Int scale_in_threshold_encoder() =  1 ;
-def Int scale_in_threshold_hyvarrec() =  2 ;
+def Int scale_in_threshold_hyvarrec() =  3 ;
 def Int scale_in_threshold_decoder() =  1 ;
 def Int scale_in_threshold_resolution_spl() =  1 ;
-def Int scale_in_threshold_variant_gen() =  1 ;
-def Int scale_in_threshold_code_gen() =  8 ;
-def Int scale_in_threshold_c_compiler() =  16 ;
-def Int scale_in_threshold_java_compiler() =  14 ;
+def Int scale_in_threshold_variant_gen() =  2 ;
+def Int scale_in_threshold_code_gen() =  30 ;
+def Int scale_in_threshold_c_compiler() =  48 ;
+def Int scale_in_threshold_java_compiler() =  46 ;
 def List<Int>  scale_in_threshold_list() = list [scale_in_threshold_encoder(),scale_in_threshold_hyvarrec(),scale_in_threshold_decoder(),scale_in_threshold_resolution_spl(),scale_in_threshold_variant_gen(),scale_in_threshold_code_gen(),scale_in_threshold_c_compiler(),scale_in_threshold_java_compiler()] ;
 
 def Int scale_out_threshold_diff_encoder() =  2 ;
-def Int scale_out_threshold_diff_hyvarrec() =  2 ;
+def Int scale_out_threshold_diff_hyvarrec() =  4 ;
 def Int scale_out_threshold_diff_decoder() =  1 ;
 def Int scale_out_threshold_diff_resolution_spl() =  1 ;
 def Int scale_out_threshold_diff_variant_gen() =  2 ;
-def Int scale_out_threshold_diff_code_gen() =  12 ;
-def Int scale_out_threshold_diff_c_compiler() =  24 ;
-def Int scale_out_threshold_diff_java_compiler() =  21 ;
+def Int scale_out_threshold_diff_code_gen() =  45 ;
+def Int scale_out_threshold_diff_c_compiler() =  72 ;
+def Int scale_out_threshold_diff_java_compiler() =  68 ;
 def List<Int>  scale_out_threshold_diff_list() = list [scale_out_threshold_diff_encoder(),scale_out_threshold_diff_hyvarrec(),scale_out_threshold_diff_decoder(),scale_out_threshold_diff_resolution_spl(),scale_out_threshold_diff_variant_gen(),scale_out_threshold_diff_code_gen(),scale_out_threshold_diff_c_compiler(),scale_out_threshold_diff_java_compiler()] ;
 
 def Int scale_in_amount_encoder() =  1 ;
@@ -79,7 +79,7 @@ def List<Int>  instance_init_time_list() = list [240, 240, 240, 240, 240, 240, 2
 
 def List<Int>  drop_requests() = list [0, 0, 0, 0, 0, 0, 0, 0] ;
 
-def List<Rat>  scaling_down_ratio_list() = list[ 1700/10,930/10,1960/10,2380/10,1340/10,150/10,70/10,80/10 ];
+def List<Rat>  scaling_down_ratio_list() = list[ 1740/10,560/10,1960/10,2720/10,950/10,40/10,20/10,20/10 ];
 
 def List<Int>  max_conn_list() = list [100, 100, 100, 100, 100, 9, 6, 7] ;
 
