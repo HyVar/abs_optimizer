@@ -35,9 +35,9 @@ avg_times[names.index('decoder')] = 305
 avg_times[names.index('resolution_spl')] = 220
 #avg_times[names.index('resolution_conf')] = 340
 avg_times[names.index('variant_gen')] = 630
-avg_times[names.index('code_gen')] = 14988
-avg_times[names.index('c_compiler')] = 23828
-avg_times[names.index('java_compiler')] = 22595
+avg_times[names.index('code_gen')] = 8358
+avg_times[names.index('c_compiler')] = 24335
+avg_times[names.index('java_compiler')] = 14166
 
 # init time for instances in ms
 instance_init_times = [240*1000]*len(names)
@@ -86,15 +86,15 @@ initial_instances = [1] * len(names)
 # x scale in factor in ms
 scaling_in = [ 3*x for x in avg_times]
 
-scaling_in[names.index('encoder')] = 688
-scaling_in[names.index('hyvarrec')] = 2134
-scaling_in[names.index('decoder')] = 610
-scaling_in[names.index('resolution_spl')] = 440
+scaling_in[names.index('encoder')] = 413
+scaling_in[names.index('hyvarrec')] = 1280
+scaling_in[names.index('decoder')] = 366
+scaling_in[names.index('resolution_spl')] = 264
 #scaling_in[names.index('resolution_conf')] = 504
-scaling_in[names.index('variant_gen')] = 1260
-scaling_in[names.index('code_gen')] = 29976
-scaling_in[names.index('c_compiler')] = 47656
-scaling_in[names.index('java_compiler')] = 45190
+scaling_in[names.index('variant_gen')] = 756
+scaling_in[names.index('code_gen')] = 10029
+scaling_in[names.index('c_compiler')] = 29202
+scaling_in[names.index('java_compiler')] = 16999
 
 scaling_in = [max(x,instance_base_speed) for x in scaling_in]
 
@@ -107,9 +107,9 @@ scaling_out_diff[names.index('decoder')] = 915
 scaling_out_diff[names.index('resolution_spl')] = 660
 #scaling_out_diff[names.index('resolution_conf')] = 756
 scaling_out_diff[names.index('variant_gen')] = 1890
-scaling_out_diff[names.index('code_gen')] = 44964
-scaling_out_diff[names.index('c_compiler')] = 71484
-scaling_out_diff[names.index('java_compiler')] = 67785
+scaling_out_diff[names.index('code_gen')] = 25074
+scaling_out_diff[names.index('c_compiler')] = 73005
+scaling_out_diff[names.index('java_compiler')] = 42498
 
 # amount of instance to increase every scale in
 scale_in_amount_list = [1] * len(names)
