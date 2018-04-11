@@ -22,7 +22,7 @@ or MacOS).
 To create the Docker image please run the following command.
 
 ```
-sudo docker pull jacopomauro/abs_optimizer:v1
+sudo docker pull jacopomauro/abs_optimizer:v1.1
 ```
 
 For more information related to Docker and how to use it we invite the reader
