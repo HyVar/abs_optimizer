@@ -1,6 +1,6 @@
 #!/bin/bash
 
-smac/util/state-merge --directories $1 --scenario-file scenario.txt --outdir $2
+smac/util/state-merge --directories $1 --scenario-file scenario.txt --outdir $2 --repair-smac-invariant false
 
 CSV_FILE=`ls $2 | grep runs_and_results-it*`
 
