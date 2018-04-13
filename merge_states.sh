@@ -21,7 +21,7 @@ else
   QUALITY=`echo $BEST"\n" | awk -F "," 'END{print $4;}'`
 
 	echo "Best solution found with quality " $QUALITY
-	NUM_SOL=`echo $BEST | awk -F "," 'END{print $1;}'`
+	NUM_SOL=`echo $BEST | awk -F "," 'END{print $2;}'`
 	TXT_FILE=`ls $2 | grep paramstrings-it*`
 	cat $2/$TXT_FILE | grep "^$NUM_SOL:"
 
