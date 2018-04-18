@@ -761,7 +761,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,instance_init_time_list," + toString(instance_init_time_list()));
 	println("aux,drop_requests," + toString(drop_requests()));
 
-	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),17000));
+	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(remove_first(jobs_per_time_slot(),0));
 	orchestrator!init();
 	
 }

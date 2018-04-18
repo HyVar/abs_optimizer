@@ -36,6 +36,7 @@ LOG_PARSER_PROGRAM = os.path.join(os.getcwd(),"solution_quality.py")
 SERVER_URL = "http://localhost"
 SERVER_PORT = "9001"
 SERVER_HOST = ""
+ABS_OPTIONS = []
 
 SLEEP_TIME_AFTER_ERROR = 60
 RESUBMISSION_ATTEMPTS = 2
@@ -137,8 +138,8 @@ def evaluate_configuration(cfg):
                     req_files.append(['abs',open(j,'rb')])
                 req_files.append(["log_parser",open(LOG_PARSER_PROGRAM,'rb')])
 
-                # to use only one processor for the erlang simulation
-                # req_files.append(["-s","1"])
+                if ABS_OPTIONS:
+                    req_files.append(ABS_OPTIONS)
 
                 start_time = datetime.datetime.now()
                 logging.debug("Pid {}, Sending request to server, attempt {}".format(
@@ -264,7 +265,10 @@ def worker(proc_num, json_data, scenario, queue):
               help='Custom header host if needed',
               show_default=True,
               default=SERVER_HOST)
-
+@click.option('--abs-simulation-options',
+              help='Comma separated options to be used to run the simulation. E.g., "-l,10"',
+              show_default=True,
+              default="")
 def run(param_file,
         abs_file,
         output_log_parser,
@@ -276,6 +280,7 @@ def run(param_file,
         server_url,
         server_port,
         server_host,
+        abs_simulation_options,
         ):
     """
     Run SMAC on the given scenario
@@ -293,13 +298,14 @@ def run(param_file,
     scenario["runcount-limit"] = global_simulation_limit
 
     # needed to call the evaluation function without passing other parameters
-    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST
+    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST, ABS_OPTIONS
 
     ABS_FILES = abs_file
     LOG_PARSER_PROGRAM = output_log_parser
     SERVER_URL = server_url
     SERVER_PORT = server_port
     SERVER_HOST = server_host
+    ABS_OPTIONS = abs_simulation_options.split(",")
 
     logging.info("Parsing JSON file")
     try:

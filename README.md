@@ -76,9 +76,11 @@ ABS POPT to be run requires
   output of the ABS simulation and compute the quality of the simulation (for more details please see below)
 * one file defining the parameters to optimize (for more details on the structure of this file please see below).
 
-As an example, ABS POPT comes with a simple ABS program requiring the compilation of two files, viz.
-`examples/hyvar/HyVarSym.abs` and `examples/hyvar/Settings.abs`, the parsing python program
-`examples/hyvar/solution_quality.py` and the parameter specification file `examples/hyvar/param_spec.json`.
+As an example, ABS POPT comes with a simple ABS program requiring the compilation of one file, viz.
+`examples/new_years_eve/NewYearsEve.abs`, the parsing python program
+`examples/new_years_eve/solution_quality.py` and the parameter specification file
+`examples/new_years_eve/param_spec.json`. The program runs forever and have to be executed with the
+option `-l` to interrupt it.
 We will use these files to show a simple usage of ABS POPT.
 
 First of all to understand the settings of ABS POPT please run the following command:
@@ -92,11 +94,12 @@ the following command.
 
 ```
 python abs_opt.py run \
- --param-file examples/hyvar/param_spec.json \
- --abs-file examples/hyvar/HyVarSym.abs --abs-file examples/hyvar/Settings.abs \
- --output-log-parser examples/hyvar/solution_quality.py \
+ --param-file examples/new_years_eve/param_spec.json \
+ --abs-file examples/new_years_eve/NewYearsEve.abs \
+ --output-log-parser examples/new_years_eve/solution_quality.py \
  --global-simulation-limit 5 \
  --global-timeout 3600
+ --abs-simulation-options "-l,310" 
 ```
 
 This starts the execution of SMAC3 and presents in output the best result obtained.
@@ -119,7 +122,11 @@ The files will be available inside the container in the directory `/files_direct
 We assume the existence of an ABS model. This model exposes parameters
 that can be tuned. Since ABS main execution does not support the setting
 of external parameters, for ABS POPT the ABS code need to contained for all
-parameters named `X` a unique line as follows.
+parameters named `p` a unique line as follows.
+
+```
+def Int p() = 0;
+```
 
 ### Defining the metric
 
