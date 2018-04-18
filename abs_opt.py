@@ -269,6 +269,10 @@ def worker(proc_num, json_data, scenario, queue):
               help='Comma separated options to be used to run the simulation. E.g., "-l,10"',
               show_default=True,
               default="")
+@click.option('--non-deterministic',
+              is_flag=True,
+              help='Flag to use if the ABS program is non deterministic',
+              )
 def run(param_file,
         abs_file,
         output_log_parser,
@@ -281,6 +285,7 @@ def run(param_file,
         server_port,
         server_host,
         abs_simulation_options,
+        non_deterministic,
         ):
     """
     Run SMAC on the given scenario
@@ -298,7 +303,7 @@ def run(param_file,
     scenario["runcount-limit"] = global_simulation_limit
 
     # needed to call the evaluation function without passing other parameters
-    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST, ABS_OPTIONS
+    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST, ABS_OPTIONS, DEFAULT_SCENARIO
 
     ABS_FILES = abs_file
     LOG_PARSER_PROGRAM = output_log_parser
@@ -306,6 +311,9 @@ def run(param_file,
     SERVER_PORT = server_port
     SERVER_HOST = server_host
     ABS_OPTIONS = abs_simulation_options.split(",")
+
+    if non_deterministic:
+        DEFAULT_SCENARIO["deterministic"] = "false"
 
     logging.info("Parsing JSON file")
     try:
