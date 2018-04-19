@@ -99,10 +99,11 @@ python abs_opt.py run \
  --output-log-parser examples/new_years_eve/solution_quality.py \
  --global-simulation-limit 5 \
  --global-timeout 3600
- --abs-simulation-options "-l,310" 
+ --abs-option-l 310 
 ```
 
 This starts the execution of SMAC3 and presents in output the best result obtained.
+The simulations of ABS are run with the option "-l" set to 310.
 
 Please note that custom abs programs and files need to be 
 copied in the container (e.g., by using `scp` or the volume

@@ -139,7 +139,7 @@ def evaluate_configuration(cfg):
                 req_files.append(["log_parser",open(LOG_PARSER_PROGRAM,'rb')])
 
                 if ABS_OPTIONS:
-                    req_files.append(ABS_OPTIONS)
+                    req_files += ABS_OPTIONS
 
                 start_time = datetime.datetime.now()
                 logging.debug("Pid {}, Sending request to server, attempt {}".format(
@@ -265,10 +265,10 @@ def worker(proc_num, json_data, scenario, queue):
               help='Custom header host if needed',
               show_default=True,
               default=SERVER_HOST)
-@click.option('--abs-simulation-options',
-              help='Comma separated options to be used to run the simulation. E.g., "-l,10"',
+@click.option('--abs-option-l',
+              help='Value of the ABS -l option if the program needs to be invoked with this option',
               show_default=True,
-              default="")
+              default=-1)
 @click.option('--non-deterministic',
               is_flag=True,
               help='Flag to use if the ABS program is non deterministic',
@@ -284,7 +284,7 @@ def run(param_file,
         server_url,
         server_port,
         server_host,
-        abs_simulation_options,
+        abs_option_l,
         non_deterministic,
         ):
     """
@@ -310,7 +310,9 @@ def run(param_file,
     SERVER_URL = server_url
     SERVER_PORT = server_port
     SERVER_HOST = server_host
-    ABS_OPTIONS = abs_simulation_options.split(",")
+    ABS_OPTIONS = []
+    if abs_option_l > 0:
+        ABS_OPTIONS.append(["-l",str(abs_option_l)])
 
     if non_deterministic:
         DEFAULT_SCENARIO["deterministic"] = "false"
