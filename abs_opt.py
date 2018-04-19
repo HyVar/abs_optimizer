@@ -291,6 +291,9 @@ def run(param_file,
     Run SMAC on the given scenario
     """
 
+    # needed to call the evaluation function without passing other parameters
+    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST, ABS_OPTIONS, DEFAULT_SCENARIO
+
     if not os.path.isdir(output_dir):
         logging.info("Creating the directory {} to store the results".format(output_dir))
         os.makedirs(output_dir)
@@ -301,9 +304,6 @@ def run(param_file,
     scenario["wallclock_limit"] = global_timeout
     scenario["cutoff_time"] = simulation_timeout
     scenario["runcount-limit"] = global_simulation_limit
-
-    # needed to call the evaluation function without passing other parameters
-    global ABS_FILES, LOG_PARSER_PROGRAM, SERVER_URL, SERVER_PORT, SERVER_HOST, ABS_OPTIONS, DEFAULT_SCENARIO
 
     ABS_FILES = abs_file
     LOG_PARSER_PROGRAM = output_log_parser
