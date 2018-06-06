@@ -65,7 +65,7 @@ the first operation to run ABS POPT is to get access to the shell of the ABS POP
 running:
 
 ```
-sudo docker exec -i -t controller_container /bin/sh
+sudo docker exec -i -t controller_container bash
 ```
 
 The ABS POPT python program `abs_opt.py` is available in the current folder.
