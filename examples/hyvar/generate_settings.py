@@ -127,15 +127,15 @@ scale_in_amount_list[names.index('java_compiler')] = 1
 # amount of instance to decrease every scale out
 scale_out_amount_list = [1] * len(names)
 
-scale_out_amount_list[names.index('encoder')] = 1
-scale_out_amount_list[names.index('hyvarrec')] = 1
-scale_out_amount_list[names.index('decoder')] = 1
-scale_out_amount_list[names.index('resolution_spl')] = 1
+scale_out_amount_list[names.index('encoder')] = 2
+scale_out_amount_list[names.index('hyvarrec')] = 2
+scale_out_amount_list[names.index('decoder')] = 2
+scale_out_amount_list[names.index('resolution_spl')] = 2
 #scale_out_amount_list[names.index('resolution_conf')] = 1
-scale_out_amount_list[names.index('variant_gen')] = 1
-scale_out_amount_list[names.index('code_gen')] = 1
-scale_out_amount_list[names.index('c_compiler')] = 1
-scale_out_amount_list[names.index('java_compiler')] = 1
+scale_out_amount_list[names.index('variant_gen')] = 2
+scale_out_amount_list[names.index('code_gen')] = 2
+scale_out_amount_list[names.index('c_compiler')] = 2
+scale_out_amount_list[names.index('java_compiler')] = 2
 
 # drop requests x-> discard x and keep the x + 1
 drop_requests = [0] * len(names)
@@ -156,7 +156,7 @@ max_conn[names.index('hyvarrec')] = 100
 max_conn[names.index('decoder')] = 100
 max_conn[names.index('resolution_spl')] = 100
 #max_conn[names.index('resolution_conf')] = 100
-max_conn[names.index('variant_gen')] = 100
+max_conn[names.index('variant_gen')] = 25
 max_conn[names.index('code_gen')] = 9
 max_conn[names.index('c_compiler')] = 6
 max_conn[names.index('java_compiler')] = 7
