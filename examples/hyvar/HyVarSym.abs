@@ -762,7 +762,7 @@ class Orchestrator(List<Int> msg_list) implements Orchestrator {
 	println("aux,drop_requests," + toString(drop_requests()));
 
 // from 6 to 1
-	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(sublist(jobs_per_time_slot(),18000,43200));
+	[HTTPName: "__global__"] Orchestrator orchestrator = new Orchestrator(sublist(jobs_per_time_slot(),18000+3600,43200));
 	orchestrator!init();
 	
 }
