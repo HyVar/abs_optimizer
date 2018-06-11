@@ -156,10 +156,10 @@ max_conn[names.index('hyvarrec')] = 100
 max_conn[names.index('decoder')] = 100
 max_conn[names.index('resolution_spl')] = 100
 #max_conn[names.index('resolution_conf')] = 100
-max_conn[names.index('variant_gen')] = 25
+max_conn[names.index('variant_gen')] = 1
 max_conn[names.index('code_gen')] = 9
 max_conn[names.index('c_compiler')] = 6
-max_conn[names.index('java_compiler')] = 7
+max_conn[names.index('java_compiler')] = 1
 
 # parallel_part
 parallel_cost = [0] * len(names)

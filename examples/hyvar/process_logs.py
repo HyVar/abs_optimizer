@@ -255,7 +255,7 @@ def main(port,
         min_time, max_time, latencies[GLOBAL_COMPONENT_NAME], requests[GLOBAL_COMPONENT_NAME] = parse_jobs_log(lines)
 
     for c in COMP_LOG_FILENAMES:
-        print os.listdir(logs_dir)
+        #print os.listdir(logs_dir)
 
         file_name = [x for x in os.listdir(logs_dir) if x.endswith(COMP_LOG_FILENAMES[c] + SCALING_LOG_SUFFIX)]
         if not file_name:
