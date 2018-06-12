@@ -19,14 +19,14 @@ def Int cooling_off_time_c_compiler() =  300 ;
 def Int cooling_off_time_java_compiler() =  300 ;
 def List<Int>  cooling_off_time_list() = list [cooling_off_time_encoder(),cooling_off_time_hyvarrec(),cooling_off_time_decoder(),cooling_off_time_resolution_spl(),cooling_off_time_variant_gen(),cooling_off_time_code_gen(),cooling_off_time_c_compiler(),cooling_off_time_java_compiler()] ;
 
-def Int initial_instances_encoder() =  1 ;
-def Int initial_instances_hyvarrec() =  1 ;
-def Int initial_instances_decoder() =  1 ;
-def Int initial_instances_resolution_spl() =  1 ;
-def Int initial_instances_variant_gen() =  1 ;
-def Int initial_instances_code_gen() =  1 ;
-def Int initial_instances_c_compiler() =  1 ;
-def Int initial_instances_java_compiler() =  1 ;
+def Int initial_instances_encoder() =  2 ;
+def Int initial_instances_hyvarrec() =  2 ;
+def Int initial_instances_decoder() =  2 ;
+def Int initial_instances_resolution_spl() =  2 ;
+def Int initial_instances_variant_gen() =  2 ;
+def Int initial_instances_code_gen() =  2 ;
+def Int initial_instances_c_compiler() =  2 ;
+def Int initial_instances_java_compiler() =  2 ;
 def List<Int> initial_instances_list() = list [initial_instances_encoder(),initial_instances_hyvarrec(),initial_instances_decoder(),initial_instances_resolution_spl(),initial_instances_variant_gen(),initial_instances_code_gen(),initial_instances_c_compiler(),initial_instances_java_compiler()] ;
 
 def List<Int>  instance_cost_list() = list [365, 1033, 343, 247, 666, 7769, 23268, 14237] ;

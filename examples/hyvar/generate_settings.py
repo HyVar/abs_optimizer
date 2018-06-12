@@ -80,7 +80,7 @@ cooling_off_time[names.index('java_compiler')] = 300
 cooling_off_time = [x * int(math.ceil(float(1000) / instance_base_speed)) for x in cooling_off_time]
 
 # initial instances per component
-initial_instances = [1] * len(names)
+initial_instances = [2] * len(names)
 #initial_instances = [1,2,1,1,13]
 
 # x scale in factor in ms
