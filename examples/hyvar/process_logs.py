@@ -68,7 +68,7 @@ def parse_jobs_log(lines):
     for line in lines:
         if line:
             ls = line.split("|")
-        id = int(ls[map_ids["id"]])
+        id = int(ls[map_ids["client_id"]])
         total_time[id] = int(ls[map_ids["total_time"]])
         time_string = ls[map_ids["start_ts"]].split(".")[0].replace("+00","")
         start_time[id] = time_import.mktime(
